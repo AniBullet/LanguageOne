@@ -1,5 +1,5 @@
 # LanguageOne
-虚幻引擎一键切换中英文插件  
+**虚幻引擎一键切换中英文插件**  
 UE5 Plugins, Editor Language Switcher, One click, Customizable shortcut keys.
 
 之前常用的 Switch Language 插件在 5.5 引擎安装不了， 
@@ -11,7 +11,7 @@ The Switch Language plugin I used frequently before couldn't be installed on the
 
 It supports one-click switching between Chinese and English, making it convenient for learning from tutorials in different languages. Additionally, I added a shortcut key feature, with the default set to Alt + Q.
 
-简单使用说明：
+**简单使用说明：**
 
 1. 下载代码
 2. 将压缩包内的 “LanguageOne” 文件夹复制到UE项目的 “Plugins” 文件夹内（没有的话手动创建一个）
