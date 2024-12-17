@@ -1,0 +1,23 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "LanguageOne",
+	"Description": "一键中英互切，支持快捷键",
+	"Category": "Editor",
+	"CreatedBy": "Bullet.S & ChatGPT",
+	"CreatedByURL": "https://x.com/aniBulletCom",
+	"DocsURL": "https://space.bilibili.com/2031113",
+	"MarketplaceURL": "",
+	"SupportURL": "https://space.bilibili.com/2031113",
+	"EngineVersion": "5.5.0",
+	"CanContainContent": false,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "LanguageOne",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	]
+}
