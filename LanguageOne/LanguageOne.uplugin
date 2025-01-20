@@ -3,13 +3,13 @@
 	"Version": 1,
 	"VersionName": "1.0",
 	"FriendlyName": "LanguageOne",
-	"Description": "一键中英互切，支持快捷键",
+	"Description": "一键中英互切，支持快捷键(Language Switcher, One click, Customizable shortcut keys.)",
 	"Category": "Editor",
 	"CreatedBy": "Bullet.S",
 	"CreatedByURL": "https://x.com/aniBulletCom",
-	"DocsURL": "https://space.bilibili.com/2031113",
-	"MarketplaceURL": "",
-	"SupportURL": "https://space.bilibili.com/2031113",
+	"DocsURL": "https://github.com/AniBullet/LanguageOne",
+	"MarketplaceURL": "com.epicgames.launcher://ue/Fab/product/40d7e62e-07c6-4690-8bef-bb3bf89b8065",
+	"SupportURL": "https://github.com/AniBullet/LanguageOne/issues",
 	"EngineVersion": "5.5.0",
 	"CanContainContent": false,
 	"Installed": true,
@@ -17,7 +17,8 @@
 		{
 			"Name": "LanguageOne",
 			"Type": "Editor",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Mac", "Linux" ]
 		}
 	]
 }
