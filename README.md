@@ -1,6 +1,7 @@
 # LanguageOne
 **虚幻引擎一键切换中英文插件**  
-UE5 Plugins, Editor Language Switcher, One click, Customizable shortcut keys.
+UE5 Plugins, Editor Language Switcher, One click, Customizable shortcut keys.  
+Fab: https://fab.com/s/dc840febb323
 
 之前常用的 Switch Language 插件在 5.5 引擎安装不了， 
 于是忍不住捣鼓了一个，非代码专长，没有过多研究。
