@@ -28,7 +28,6 @@ void FLanguageOneModule::StartupModule()
 	FLanguageOneCommands::Register();
 
 	UE_LOG(LogTemp, Log, TEXT("LanguageOne module starting up"));
-	FLanguageOneCommands::Register();
 	UE_LOG(LogTemp, Log, TEXT("LanguageOne commands registered"));
 
 	PluginCommands = MakeShareable(new FUICommandList);
@@ -86,7 +85,7 @@ void FLanguageOneModule::RegisterMenus()
 	{
 		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar");
 		{
-			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("PluginTools");
+			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("LanguageOneTools");
 			{
 				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FLanguageOneCommands::Get().PluginAction));
 				Entry.SetCommandList(PluginCommands);
@@ -97,7 +96,7 @@ void FLanguageOneModule::RegisterMenus()
 	{
 		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("AssetEditorToolbar.CommonActions");
 		{
-			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("PluginTools");
+			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("LanguageOneTools");
 			{
 				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FLanguageOneCommands::Get().PluginAction));
 				Entry.SetCommandList(PluginCommands);
