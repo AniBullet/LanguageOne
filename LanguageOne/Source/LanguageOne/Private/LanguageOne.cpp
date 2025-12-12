@@ -212,34 +212,54 @@ void FLanguageOneModule::RegisterMenus()
 		{
 			FToolMenuSection& Section = Menu->FindOrAddSection("WindowLayout");
 			Section.AddMenuEntryWithCommandList(FLanguageOneCommands::Get().PluginAction, PluginCommands);
+			UE_LOG(LogTemp, Log, TEXT("Added PluginAction to Window menu"));
 		}
 	}
 
+	// 主编辑器工具栏 - 版本兼容
 	{
+#if ENGINE_MAJOR_VERSION >= 5
+		// UE5+ 使用细分的工具栏
 		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar");
+#else
+		// UE 4.26-4.27 使用统一的工具栏
+		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar");
+#endif
 		{
 			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("LanguageOneTools");
 			{
 				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FLanguageOneCommands::Get().PluginAction));
 				Entry.SetCommandList(PluginCommands);
+				UE_LOG(LogTemp, Log, TEXT("Added PluginAction button to LevelEditor toolbar"));
 			}
 		}
 	}
 
+	// 资源编辑器工具栏 - 版本兼容
 	{
+#if ENGINE_MAJOR_VERSION >= 5
+		// UE5+ 使用新路径
 		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("AssetEditorToolbar.CommonActions");
+#else
+		// UE 4.26-4.27 使用旧路径
+		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("AssetEditor.DefaultToolBar");
+#endif
 		{
 			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("LanguageOneTools");
 			{
 				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FLanguageOneCommands::Get().PluginAction));
 				Entry.SetCommandList(PluginCommands);
+				UE_LOG(LogTemp, Log, TEXT("Added PluginAction button to AssetEditor toolbar"));
 			}
 			{
 				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FLanguageOneCommands::Get().TranslateCommentAction));
 				Entry.SetCommandList(PluginCommands);
+				UE_LOG(LogTemp, Log, TEXT("Added TranslateCommentAction button to AssetEditor toolbar"));
 			}
 		}
 	}
+	
+	UE_LOG(LogTemp, Log, TEXT("LanguageOne menus registered successfully"));
 }
 
 FString GetLanguageCode(EEditorLanguage Language)

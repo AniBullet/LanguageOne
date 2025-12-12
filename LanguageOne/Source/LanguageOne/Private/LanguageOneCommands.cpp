@@ -1,14 +1,15 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "LanguageOneCommands.h"
+#include "LanguageOneStyle.h"
 
 #define LOCTEXT_NAMESPACE "FLanguageOneModule"
 
 
 void FLanguageOneCommands::RegisterCommands()
 {
-    UI_COMMAND(PluginAction, "Switch Language", "Switch between Chinese and English", EUserInterfaceActionType::Button, FInputChord(EModifierKey::Alt, EKeys::Q));
-    UI_COMMAND(TranslateCommentAction, "Translate Comment", "Translate selected blueprint node comments", EUserInterfaceActionType::Button, FInputChord(EModifierKey::Control, EKeys::T));
+    UI_COMMAND(PluginAction, "Switch Language", "Switch between editor languages (Alt+Q)", EUserInterfaceActionType::Button, FInputChord(EModifierKey::Alt, EKeys::Q));
+    UI_COMMAND(TranslateCommentAction, "Translate Comment", "Translate blueprint node comments (Ctrl+T)", EUserInterfaceActionType::Button, FInputChord(EModifierKey::Control, EKeys::T));
 }
 
 #undef LOCTEXT_NAMESPACE
