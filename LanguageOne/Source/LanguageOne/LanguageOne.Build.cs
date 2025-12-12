@@ -17,30 +17,35 @@ public class LanguageOne : ModuleRules
 			);
 			
 		
-		PrivateDependencyModuleNames.AddRange(
-			new string[]
-			{
-				"Projects",
-				"InputCore",
-				"EditorFramework",
-				"UnrealEd",
-				"ToolMenus",
-				"CoreUObject",
-				"Engine",
-				"Slate",
-				"SlateCore",
-                "LevelEditor",
-                "EditorStyle",
-                "ApplicationCore",
-                "AppFramework",
-				"BlueprintGraph",
-				"Kismet",
-				"GraphEditor",
-				"HTTP",
-				"Json",
-				"JsonUtilities"
-				// ... add private dependencies that you statically link with here ...	
-			}
-			);
+	PrivateDependencyModuleNames.AddRange(
+		new string[]
+		{
+			"Projects",
+			"InputCore",
+			"UnrealEd",
+			"ToolMenus",
+			"CoreUObject",
+			"Engine",
+			"Slate",
+			"SlateCore",
+            "LevelEditor",
+            "EditorStyle",
+            "ApplicationCore",
+            "AppFramework",
+			"BlueprintGraph",
+			"Kismet",
+			"GraphEditor",
+			"HTTP",
+			"Json",
+			"JsonUtilities"
+			// ... add private dependencies that you statically link with here ...	
+		}
+		);
+		
+		// EditorFramework only exists in UE5+
+		if (Target.Version.MajorVersion >= 5)
+		{
+			PrivateDependencyModuleNames.Add("EditorFramework");
+		}
 	}
 }

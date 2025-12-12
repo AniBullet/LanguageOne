@@ -4,6 +4,7 @@
 #include "LanguageOneStyle.h"
 #include "LanguageOneCommands.h"
 #include "LanguageOneSettings.h"
+#include "LanguageOneCompatibility.h"
 #include "CommentTranslator.h"
 #include "Misc/MessageDialog.h"
 #include "ToolMenus.h"
@@ -15,7 +16,6 @@
 #include "Internationalization/Internationalization.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Framework/Application/IInputProcessor.h"
-#include "Styling/AppStyle.h"
 #include "ISettingsModule.h"
 #include "ISettingsSection.h"
 #include "Kismet2/BlueprintEditorUtils.h"
@@ -400,15 +400,15 @@ void FLanguageOneModule::TranslateSelectedNodes()
 		
 		for (TSharedRef<SWindow> Window : Windows)
 		{
-			TSharedRef<SWidget> WindowContent = Window->GetContent();
+			TSharedRef<const SWidget> WindowContent = Window->GetContent();
 			
 			// 递归查找 GraphPanel
-			TArray<TSharedRef<SWidget>> WidgetsToCheck;
+			TArray<TSharedRef<const SWidget>> WidgetsToCheck;
 			WidgetsToCheck.Add(WindowContent);
 			
 			while (WidgetsToCheck.Num() > 0 && NodesToTranslate.Num() == 0)
 			{
-				TSharedRef<SWidget> Widget = WidgetsToCheck.Pop();
+				TSharedRef<const SWidget> Widget = WidgetsToCheck.Pop();
 				FName WidgetType = Widget->GetType();
 				FString WidgetTypeName = WidgetType.ToString();
 				

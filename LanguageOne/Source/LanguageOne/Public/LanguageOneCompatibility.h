@@ -22,15 +22,9 @@
 #define UE_VERSION_NEWER_THAN(Major, Minor) (ENGINE_MAJOR_VERSION > Major || (ENGINE_MAJOR_VERSION == Major && ENGINE_MINOR_VERSION >= Minor))
 
 // ========== URL 编码兼容 ==========
-// UE5.0+ 使用 FGenericPlatformHttp::UrlEncode
-// UE4.26-4.27 使用 FPlatformHttp::UrlEncode
-#if ENGINE_MAJOR_VERSION >= 5
-	#include "GenericPlatform/GenericPlatformHttp.h"
-	#define LANGUAGEONE_URL_ENCODE(Text) FGenericPlatformHttp::UrlEncode(Text)
-#else
-	#include "GenericPlatform/GenericPlatformHttp.h"
-	#define LANGUAGEONE_URL_ENCODE(Text) FPlatformHttp::UrlEncode(Text)
-#endif
+// 所有版本统一使用 FGenericPlatformHttp::UrlEncode
+#include "GenericPlatform/GenericPlatformHttp.h"
+#define LANGUAGEONE_URL_ENCODE(Text) FGenericPlatformHttp::UrlEncode(Text)
 
 // ========== Slate 样式兼容 ==========
 // UE5.1+ 使用 FAppStyle
