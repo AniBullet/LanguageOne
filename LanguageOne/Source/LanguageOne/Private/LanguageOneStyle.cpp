@@ -1,3 +1,11 @@
+/*
+ * @Description: 
+ * @Author: Bullet.S
+ * @Date: 2025-01-19 00:07:44
+ * @LastEditors: Bullet.S
+ * @LastEditTime: 2025-12-12 19:48:15
+ * @Email: animator.bullet@foxmail.com
+ */
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "LanguageOneStyle.h"
@@ -44,6 +52,7 @@ TSharedRef< FSlateStyleSet > FLanguageOneStyle::Create()
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("LanguageOne")->GetBaseDir() / TEXT("Resources"));
 
 	Style->Set("LanguageOne.PluginAction", new IMAGE_BRUSH_SVG(TEXT("LanguageOneIcon"), Icon64x64));
+	Style->Set("LanguageOne.TranslateCommentAction", new IMAGE_BRUSH_SVG(TEXT("CommentTranslateIcon"), Icon64x64));
 	return Style;
 }
 

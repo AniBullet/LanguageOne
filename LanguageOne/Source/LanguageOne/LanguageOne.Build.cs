@@ -32,7 +32,13 @@ public class LanguageOne : ModuleRules
                 "LevelEditor",
                 "EditorStyle",
                 "ApplicationCore",
-                "AppFramework"
+                "AppFramework",
+				"BlueprintGraph",
+				"Kismet",
+				"GraphEditor",
+				"HTTP",
+				"Json",
+				"JsonUtilities"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
