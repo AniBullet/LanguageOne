@@ -520,8 +520,8 @@ void FLanguageOneModule::TranslateSelectedNodes()
 	}
 
 	// 开始翻译未翻译的节点
-	int32 TranslatedCount = 0;
 	int32 TotalCount = UntranslatedNodes.Num();
+	int32 CurrentIndex = 0;
 
 	for (UEdGraphNode* Node : UntranslatedNodes)
 	{
@@ -530,15 +530,24 @@ void FLanguageOneModule::TranslateSelectedNodes()
 		// 保存原始注释
 		OriginalComments.Add(TWeakObjectPtr<UEdGraphNode>(Node), NodeComment);
 		
-		UE_LOG(LogTemp, Log, TEXT("Translating comment %d/%d"), TranslatedCount + 1, TotalCount);
+		CurrentIndex++;
+		int32 IndexCapture = CurrentIndex; // 按值捕获索引用于日志
+		UE_LOG(LogTemp, Log, TEXT("Translating comment %d/%d"), IndexCapture, TotalCount);
 
-		// 翻译注释
-		UEdGraphNode* NodeToModify = Node;
-		TMap<TWeakObjectPtr<UEdGraphNode>, FString>& OriginalCommentsRef = OriginalComments;
+		// 使用 TWeakObjectPtr 安全地捕获节点指针
+		TWeakObjectPtr<UEdGraphNode> WeakNode(Node);
 		FCommentTranslator::TranslateText(
 			NodeComment,
-			FOnTranslationComplete::CreateLambda([NodeToModify, NodeComment, &TranslatedCount, &OriginalCommentsRef](const FString& TranslatedText)
+			FOnTranslationComplete::CreateLambda([WeakNode, NodeComment, IndexCapture](const FString& TranslatedText)
 					{
+						// 检查节点是否仍然有效
+						if (!WeakNode.IsValid())
+						{
+							UE_LOG(LogTemp, Warning, TEXT("Node was destroyed before translation completed"));
+							return;
+						}
+						
+						UEdGraphNode* NodeToModify = WeakNode.Get();
 						const ULanguageOneSettings* Settings = GetDefault<ULanguageOneSettings>();
 						FString NewComment;
 						
@@ -561,18 +570,16 @@ void FLanguageOneModule::TranslateSelectedNodes()
 						NodeToModify->Modify();
 						NodeToModify->NodeComment = NewComment;
 						NodeToModify->GetGraph()->NotifyGraphChanged();
-						
-						TranslatedCount++;
 
-						UE_LOG(LogTemp, Log, TEXT("Comment translated successfully"));
+						UE_LOG(LogTemp, Log, TEXT("Comment %d translated successfully"), IndexCapture);
 					}),
-					FOnTranslationError::CreateLambda([](const FString& ErrorMessage)
+					FOnTranslationError::CreateLambda([IndexCapture](const FString& ErrorMessage)
 					{
 						FNotificationInfo Info(FText::FromString(FString::Printf(TEXT("翻译失败 | Translation failed: %s"), *ErrorMessage)));
 						Info.ExpireDuration = 5.0f;
 						FSlateNotificationManager::Get().AddNotification(Info);
 
-						UE_LOG(LogTemp, Error, TEXT("Translation failed: %s"), *ErrorMessage);
+						UE_LOG(LogTemp, Error, TEXT("Translation %d failed: %s"), IndexCapture, *ErrorMessage);
 					})
 				);
 	}

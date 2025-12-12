@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "CommentTranslator.h"
+#include "LanguageOneCompatibility.h"
 #include "LanguageOneSettings.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
@@ -8,7 +9,6 @@
 #include "Json.h"
 #include "JsonUtilities.h"
 #include "Misc/SecureHash.h"
-#include "GenericPlatform/GenericPlatformHttp.h"
 
 void FCommentTranslator::TranslateText(const FString& SourceText, FOnTranslationComplete OnComplete, FOnTranslationError OnError)
 {
@@ -57,7 +57,7 @@ void FCommentTranslator::TranslateWithGoogleFree(const FString& SourceText, cons
 {
 	// 使用 Google Translate 的免费接口（通过 translate.googleapis.com 的公开端点）
 	// 注意：这个接口不稳定，可能随时失效
-	FString EncodedText = FGenericPlatformHttp::UrlEncode(SourceText);
+	FString EncodedText = LANGUAGEONE_URL_ENCODE(SourceText);
 	FString Url = FString::Printf(TEXT("https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=%s&dt=t&q=%s"),
 		*TargetLang, *EncodedText);
 
@@ -124,7 +124,7 @@ void FCommentTranslator::TranslateWithMicrosoftFree(const FString& SourceText, c
 {
 	// 使用 MyMemory 翻译 API（免费，无需密钥）
 	// 这是一个公开的翻译服务，每天有配额限制
-	FString EncodedText = FGenericPlatformHttp::UrlEncode(SourceText);
+	FString EncodedText = LANGUAGEONE_URL_ENCODE(SourceText);
 	FString Url = FString::Printf(TEXT("https://api.mymemory.translated.net/get?q=%s&langpair=auto|%s"),
 		*EncodedText, *TargetLang);
 
@@ -238,7 +238,7 @@ void FCommentTranslator::TranslateWithBaidu(const FString& SourceText, const FSt
 	FString Salt = FString::FromInt(FMath::Rand());
 	FString Sign = GenerateMD5(Settings->BaiduAppId + SourceText + Salt + Settings->BaiduSecretKey);
 	
-	FString EncodedText = FGenericPlatformHttp::UrlEncode(SourceText);
+	FString EncodedText = LANGUAGEONE_URL_ENCODE(SourceText);
 	FString Url = FString::Printf(TEXT("https://fanyi-api.baidu.com/api/trans/vip/translate?q=%s&from=auto&to=%s&appid=%s&salt=%s&sign=%s"),
 		*EncodedText, *TargetLang, *Settings->BaiduAppId, *Salt, *Sign);
 
@@ -300,7 +300,7 @@ void FCommentTranslator::TranslateWithGoogle(const FString& SourceText, const FS
 		return;
 	}
 
-	FString EncodedText = FGenericPlatformHttp::UrlEncode(SourceText);
+	FString EncodedText = LANGUAGEONE_URL_ENCODE(SourceText);
 	FString Url = FString::Printf(TEXT("https://translation.googleapis.com/language/translate/v2?key=%s&q=%s&target=%s"),
 		*Settings->GoogleApiKey, *EncodedText, *TargetLang);
 
