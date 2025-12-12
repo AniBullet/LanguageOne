@@ -237,13 +237,12 @@ void FLanguageOneModule::RegisterMenus()
 
 	// 资源编辑器工具栏 - 版本兼容
 	{
-#if ENGINE_MAJOR_VERSION >= 5
-		// UE5+ 使用新路径，需要显式指定图标
+#if ENGINE_MAJOR_VERSION >= 5 && ENGINE_MINOR_VERSION >= 1
+		// UE 5.1+ 显式指定图标
 		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("AssetEditorToolbar.CommonActions");
 		{
 			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("LanguageOneTools");
 			{
-				// UE5+ 显式指定图标
 				FToolMenuEntry LanguageEntry = FToolMenuEntry::InitToolBarButton(
 					FLanguageOneCommands::Get().PluginAction,
 					LOCTEXT("SwitchLanguage", "Switch Language"),
@@ -252,7 +251,7 @@ void FLanguageOneModule::RegisterMenus()
 				);
 				LanguageEntry.SetCommandList(PluginCommands);
 				Section.AddEntry(LanguageEntry);
-				UE_LOG(LogTemp, Log, TEXT("Added PluginAction button to AssetEditor toolbar (UE5+)"));
+				UE_LOG(LogTemp, Log, TEXT("Added PluginAction button to AssetEditor toolbar (UE 5.1+)"));
 			}
 			{
 				FToolMenuEntry TranslateEntry = FToolMenuEntry::InitToolBarButton(
@@ -263,23 +262,39 @@ void FLanguageOneModule::RegisterMenus()
 				);
 				TranslateEntry.SetCommandList(PluginCommands);
 				Section.AddEntry(TranslateEntry);
-				UE_LOG(LogTemp, Log, TEXT("Added TranslateCommentAction button to AssetEditor toolbar (UE5+)"));
+				UE_LOG(LogTemp, Log, TEXT("Added TranslateCommentAction button to AssetEditor toolbar (UE 5.1+)"));
+			}
+		}
+#elif ENGINE_MAJOR_VERSION >= 5
+		// UE 5.0 使用简单方式（和旧版本一致）
+		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("AssetEditorToolbar.CommonActions");
+		{
+			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("LanguageOneTools");
+			{
+				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FLanguageOneCommands::Get().PluginAction));
+				Entry.SetCommandList(PluginCommands);
+				UE_LOG(LogTemp, Log, TEXT("Added PluginAction button to AssetEditor toolbar (UE 5.0)"));
+			}
+			{
+				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FLanguageOneCommands::Get().TranslateCommentAction));
+				Entry.SetCommandList(PluginCommands);
+				UE_LOG(LogTemp, Log, TEXT("Added TranslateCommentAction button to AssetEditor toolbar (UE 5.0)"));
 			}
 		}
 #else
-		// UE 4.26-4.27 使用旧路径（保持不变）
+		// UE 4.26-4.27 使用旧路径
 		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("AssetEditor.DefaultToolBar");
 		{
 			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("LanguageOneTools");
 			{
 				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FLanguageOneCommands::Get().PluginAction));
 				Entry.SetCommandList(PluginCommands);
-				UE_LOG(LogTemp, Log, TEXT("Added PluginAction button to AssetEditor toolbar"));
+				UE_LOG(LogTemp, Log, TEXT("Added PluginAction button to AssetEditor toolbar (UE 4.x)"));
 			}
 			{
 				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FLanguageOneCommands::Get().TranslateCommentAction));
 				Entry.SetCommandList(PluginCommands);
-				UE_LOG(LogTemp, Log, TEXT("Added TranslateCommentAction button to AssetEditor toolbar"));
+				UE_LOG(LogTemp, Log, TEXT("Added TranslateCommentAction button to AssetEditor toolbar (UE 4.x)"));
 			}
 		}
 #endif
