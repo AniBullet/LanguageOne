@@ -4,7 +4,7 @@
 
 **虚幻引擎编辑器语言 & 蓝图注释翻译工具**
 
-[![Version](https://img.shields.io/badge/version-v1.2-brightgreen?style=flat-square)](https://github.com/AniBullet/LanguageOne/releases)
+[![Version](https://img.shields.io/github/v/release/AniBullet/LanguageOne?style=flat-square&color=brightgreen)](https://github.com/AniBullet/LanguageOne/releases)
 [![Fab](https://img.shields.io/badge/Fab-下载-blue?style=flat-square)](https://fab.com/s/dc840febb323)
 [![UE](https://img.shields.io/badge/UE-4.26~5.7+-orange?style=flat-square)](https://www.unrealengine.com/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
@@ -12,6 +12,11 @@
 **[中文](#-中文说明) · [English](#-english)**
 
 </div>
+
+> [!NOTE]
+> **📢 声明 | Disclaimer**  
+> 本人代码能力一般，插件使用 AI 辅助编写，主要用于个人学习和交流。  
+> This plugin is AI-assisted and created for personal learning purposes.
 
 ---
 
@@ -55,9 +60,7 @@
 
 ### 📝 更新日志
 
-- **v1.2** - 蓝图翻译 · 免费服务 · 11 种语言 · 智能还原 · 翻译全图
-- **v1.1** - 稳定性改进 · UE5.7 兼容
-- **v1.0** - 初始版本
+查看完整更新记录：[GitHub Releases](https://github.com/AniBullet/LanguageOne/releases)
 
 ---
 
@@ -91,9 +94,7 @@
 
 ### 📝 Changelog
 
-- **v1.2** - Blueprint translation · Free services · 11 languages · Smart restore · Translate all
-- **v1.1** - Stability · UE5.7 compatibility
-- **v1.0** - Initial release
+See full history: [GitHub Releases](https://github.com/AniBullet/LanguageOne/releases)
 
 ---
 
