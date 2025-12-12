@@ -414,7 +414,9 @@ void FLanguageOneModule::TranslateSelectedNodes()
 				
 				if (WidgetTypeName.Contains(TEXT("GraphPanel")) || WidgetType == FName("SGraphPanel"))
 				{
-					TSharedRef<SGraphPanel> GraphPanelRef = StaticCastSharedRef<SGraphPanel>(Widget);
+					// 移除 const 限定符以便调用非 const 方法
+					TSharedRef<SWidget> MutableWidget = ConstCastSharedRef<SWidget>(Widget);
+					TSharedRef<SGraphPanel> GraphPanelRef = StaticCastSharedRef<SGraphPanel>(MutableWidget);
 					TSharedPtr<SGraphPanel> GraphPanel = GraphPanelRef;
 					if (GraphPanel.IsValid())
 					{
@@ -455,8 +457,9 @@ void FLanguageOneModule::TranslateSelectedNodes()
 					}
 				}
 				
-				// 添加子 Widget 到检查列表
-				FChildren* Children = Widget->GetChildren();
+				// 添加子 Widget 到检查列表（需要移除 const）
+				TSharedRef<SWidget> MutableWidgetForChildren = ConstCastSharedRef<SWidget>(Widget);
+				FChildren* Children = MutableWidgetForChildren->GetChildren();
 				if (Children)
 				{
 					for (int32 i = 0; i < Children->Num(); ++i)
