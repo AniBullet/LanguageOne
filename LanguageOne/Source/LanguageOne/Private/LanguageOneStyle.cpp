@@ -23,11 +23,6 @@
 	#include "Styling/SlateStyle.h"
 #endif
 
-// UE 4.x 需要手动定义宏
-#if ENGINE_MAJOR_VERSION < 5
-	#define RootToContentDir Style->RootToContentDir
-#endif
-
 TSharedPtr<FSlateStyleSet> FLanguageOneStyle::StyleInstance = NULL;
 
 void FLanguageOneStyle::Initialize()
@@ -62,12 +57,14 @@ TSharedRef< FSlateStyleSet > FLanguageOneStyle::Create()
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("LanguageOne")->GetBaseDir() / TEXT("Resources"));
 
 #if ENGINE_MAJOR_VERSION >= 5
-	// UE5+ 使用 SlateStyleMacros.h 的 IMAGE_BRUSH_SVG（加载 SVG）
+	// UE5+ 使用 SlateStyleMacros.h 的 IMAGE_BRUSH_SVG（需要 RootToContentDir 宏）
+	#define RootToContentDir Style->RootToContentDir
 	Style->Set("LanguageOne.PluginAction", new IMAGE_BRUSH_SVG(TEXT("LanguageOneIcon"), Icon64x64));
 	Style->Set("LanguageOne.TranslateCommentAction", new IMAGE_BRUSH_SVG(TEXT("CommentTranslateIcon"), Icon64x64));
+	#undef RootToContentDir
 	UE_LOG(LogTemp, Log, TEXT("LanguageOne Style - Using SVG icons (UE5+)"));
 #else
-	// UE 4.x 使用 PNG（宏名叫 IMAGE_BRUSH_SVG 但实际加载 PNG）
+	// UE 4.x 使用 PNG（手动定义宏加载 PNG）
 	#define IMAGE_BRUSH_SVG(RelativePath, ...) FSlateImageBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
 	Style->Set("LanguageOne.PluginAction", new IMAGE_BRUSH_SVG(TEXT("Icon128"), Icon64x64));
 	Style->Set("LanguageOne.TranslateCommentAction", new IMAGE_BRUSH_SVG(TEXT("CommentTranslateIcon"), Icon64x64));
@@ -77,10 +74,6 @@ TSharedRef< FSlateStyleSet > FLanguageOneStyle::Create()
 	
 	return Style;
 }
-
-#if ENGINE_MAJOR_VERSION < 5
-	#undef RootToContentDir
-#endif
 
 void FLanguageOneStyle::ReloadTextures()
 {
