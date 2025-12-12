@@ -336,11 +336,28 @@ void FLanguageOneModule::SwitchLanguage()
 	FString TargetCulture = GetLanguageCode(Settings->TargetEditorLanguage);
 	FString NewCulture;
 
-	// 双语言切换逻辑：在当前语言和目标语言之间来回切换
+	// 检查是否两个切换语言相同
 	if (CurrentCulture == TargetCulture)
 	{
+		FString PreviousCulture = Settings->PreviousLanguage.IsEmpty() ? TEXT("zh-CN") : Settings->PreviousLanguage;
+		
+		// 如果当前、目标、上一次都是同一个语言，提醒用户
+		if (CurrentCulture.StartsWith(PreviousCulture.Left(2)) || PreviousCulture.StartsWith(CurrentCulture.Left(2)))
+		{
+			FNotificationInfo Info(FText::FromString(
+				FString::Printf(TEXT("⚠️ 当前语言和目标语言相同！\nCurrent and target languages are the same!\n\n请到 编辑器偏好设置 > 插件 > LanguageOne 修改目标语言\nPlease change target language in:\nEdit > Editor Preferences > Plugins > LanguageOne"))
+			));
+			Info.ExpireDuration = 8.0f;
+			Info.bUseThrobber = false;
+			Info.bUseSuccessFailIcons = true;
+			FSlateNotificationManager::Get().AddNotification(Info);
+			
+			UE_LOG(LogTemp, Warning, TEXT("Language switch skipped: Current (%s) and Target (%s) are the same!"), *CurrentCulture, *TargetCulture);
+			return;
+		}
+		
 		// 当前已经是目标语言，切换到上一次的语言
-		NewCulture = Settings->PreviousLanguage.IsEmpty() ? TEXT("zh-CN") : Settings->PreviousLanguage;
+		NewCulture = PreviousCulture;
 		UE_LOG(LogTemp, Log, TEXT("Switch back from %s to previous language %s"), *CurrentCulture, *NewCulture);
 	}
 	else
