@@ -266,17 +266,21 @@ void FLanguageOneModule::RegisterMenus()
 			}
 		}
 #elif ENGINE_MAJOR_VERSION >= 5
-		// UE 5.0 使用和 4.x 相同的简单方式
+		// UE 5.0 使用和 4.x 相同的简单方式，但只显示图标
 		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("AssetEditor.DefaultToolBar");
 		{
 			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("LanguageOneTools");
 			{
 				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FLanguageOneCommands::Get().PluginAction));
 				Entry.SetCommandList(PluginCommands);
+				Entry.Icon = FSlateIcon(FLanguageOneStyle::GetStyleSetName(), "LanguageOne.PluginAction");
+				Entry.Label = FText::GetEmpty(); // 不显示文字
 			}
 			{
 				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FLanguageOneCommands::Get().TranslateCommentAction));
 				Entry.SetCommandList(PluginCommands);
+				Entry.Icon = FSlateIcon(FLanguageOneStyle::GetStyleSetName(), "LanguageOne.TranslateCommentAction");
+				Entry.Label = FText::GetEmpty(); // 不显示文字
 			}
 		}
 #else

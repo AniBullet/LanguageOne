@@ -56,20 +56,20 @@ TSharedRef< FSlateStyleSet > FLanguageOneStyle::Create()
 	TSharedRef< FSlateStyleSet > Style = MakeShareable(new FSlateStyleSet("LanguageOneStyle"));
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("LanguageOne")->GetBaseDir() / TEXT("Resources"));
 
-#if ENGINE_MAJOR_VERSION >= 5 && ENGINE_MINOR_VERSION >= 1
-	// UE 5.1+ 使用 SVG
+#if ENGINE_MAJOR_VERSION >= 5
+	// UE 5.0+ 使用 SVG（更清晰）
 	#define RootToContentDir Style->RootToContentDir
 	Style->Set("LanguageOne.PluginAction", new IMAGE_BRUSH_SVG(TEXT("LanguageOneIcon"), Icon64x64));
 	Style->Set("LanguageOne.TranslateCommentAction", new IMAGE_BRUSH_SVG(TEXT("CommentTranslateIcon"), Icon64x64));
 	#undef RootToContentDir
-	UE_LOG(LogTemp, Log, TEXT("LanguageOne Style - Using SVG icons (UE 5.1+)"));
+	UE_LOG(LogTemp, Log, TEXT("LanguageOne Style - Using SVG icons (UE 5.0+)"));
 #else
-	// UE 4.x ~ 5.0 使用 PNG
+	// UE 4.x 使用 PNG
 	#define IMAGE_BRUSH_PNG(RelativePath, ...) FSlateImageBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
 	Style->Set("LanguageOne.PluginAction", new IMAGE_BRUSH_PNG(TEXT("Icon128"), Icon64x64));
 	Style->Set("LanguageOne.TranslateCommentAction", new IMAGE_BRUSH_PNG(TEXT("CommentTranslateIcon"), Icon64x64));
 	#undef IMAGE_BRUSH_PNG
-	UE_LOG(LogTemp, Log, TEXT("LanguageOne Style - Using PNG icons (UE 4.x ~ 5.0)"));
+	UE_LOG(LogTemp, Log, TEXT("LanguageOne Style - Using PNG icons (UE 4.x)"));
 #endif
 	
 	return Style;
