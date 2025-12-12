@@ -14,11 +14,18 @@
 #include "Styling/SlateStyleRegistry.h"
 #include "Slate/SlateGameResources.h"
 #include "Interfaces/IPluginManager.h"
-#include "Styling/SlateBrush.h"
 
-// UE5.1+ 需要 SVG Brush
-#if ENGINE_MAJOR_VERSION >= 5 && ENGINE_MINOR_VERSION >= 1
-	#include "Brushes/SlateVectorImageBrush.h"
+// 版本兼容的头文件
+#if ENGINE_MAJOR_VERSION >= 5
+	#include "Styling/SlateStyleMacros.h"
+#else
+	#include "Styling/SlateBrush.h"
+	#include "Styling/SlateStyle.h"
+#endif
+
+// UE 4.x 需要手动定义宏
+#if ENGINE_MAJOR_VERSION < 5
+	#define RootToContentDir Style->RootToContentDir
 #endif
 
 TSharedPtr<FSlateStyleSet> FLanguageOneStyle::StyleInstance = NULL;
@@ -47,31 +54,33 @@ FName FLanguageOneStyle::GetStyleSetName()
 
 
 const FVector2D Icon16x16(16.0f, 16.0f);
-const FVector2D Icon40x40(40.0f, 40.0f);
+const FVector2D Icon64x64(64.0f, 64.0f);
 
 TSharedRef< FSlateStyleSet > FLanguageOneStyle::Create()
 {
 	TSharedRef< FSlateStyleSet > Style = MakeShareable(new FSlateStyleSet("LanguageOneStyle"));
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("LanguageOne")->GetBaseDir() / TEXT("Resources"));
 
-#if ENGINE_MAJOR_VERSION >= 5 && ENGINE_MINOR_VERSION >= 1
-	// UE 5.1+ 使用 SVG
-	#define IMAGE_BRUSH_SVG(RelativePath, ...) FSlateVectorImageBrush(Style->RootToContentDir(RelativePath, TEXT(".svg")), __VA_ARGS__)
-	Style->Set("LanguageOne.PluginAction", new IMAGE_BRUSH_SVG(TEXT("LanguageOneIcon"), Icon40x40));
-	Style->Set("LanguageOne.TranslateCommentAction", new IMAGE_BRUSH_SVG(TEXT("CommentTranslateIcon"), Icon40x40));
-	#undef IMAGE_BRUSH_SVG
-	UE_LOG(LogTemp, Log, TEXT("LanguageOne Style - Using SVG icons (UE 5.1+)"));
+#if ENGINE_MAJOR_VERSION >= 5
+	// UE5+ 使用 SlateStyleMacros.h 的 IMAGE_BRUSH_SVG（加载 SVG）
+	Style->Set("LanguageOne.PluginAction", new IMAGE_BRUSH_SVG(TEXT("LanguageOneIcon"), Icon64x64));
+	Style->Set("LanguageOne.TranslateCommentAction", new IMAGE_BRUSH_SVG(TEXT("CommentTranslateIcon"), Icon64x64));
+	UE_LOG(LogTemp, Log, TEXT("LanguageOne Style - Using SVG icons (UE5+)"));
 #else
-	// UE 4.26-5.0 使用 PNG (使用宏定义，在 Create 函数内 Style 已存在)
-	#define IMAGE_BRUSH(RelativePath, ...) FSlateImageBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
-	Style->Set("LanguageOne.PluginAction", new IMAGE_BRUSH(TEXT("Icon128"), Icon40x40));
-	Style->Set("LanguageOne.TranslateCommentAction", new IMAGE_BRUSH(TEXT("CommentTranslateIcon"), Icon40x40));
-	#undef IMAGE_BRUSH
-	UE_LOG(LogTemp, Log, TEXT("LanguageOne Style - Using PNG icons (UE 4.26-5.0)"));
+	// UE 4.x 使用 PNG（宏名叫 IMAGE_BRUSH_SVG 但实际加载 PNG）
+	#define IMAGE_BRUSH_SVG(RelativePath, ...) FSlateImageBrush(Style->RootToContentDir(RelativePath, TEXT(".png")), __VA_ARGS__)
+	Style->Set("LanguageOne.PluginAction", new IMAGE_BRUSH_SVG(TEXT("Icon128"), Icon64x64));
+	Style->Set("LanguageOne.TranslateCommentAction", new IMAGE_BRUSH_SVG(TEXT("CommentTranslateIcon"), Icon64x64));
+	#undef IMAGE_BRUSH_SVG
+	UE_LOG(LogTemp, Log, TEXT("LanguageOne Style - Using PNG icons (UE4.x)"));
 #endif
 	
 	return Style;
 }
+
+#if ENGINE_MAJOR_VERSION < 5
+	#undef RootToContentDir
+#endif
 
 void FLanguageOneStyle::ReloadTextures()
 {
