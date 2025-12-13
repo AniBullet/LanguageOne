@@ -17,7 +17,9 @@ $EngineVersions = @(
     @{ Version = "5.2"; VersionString = "5.2.0" },
     @{ Version = "5.3"; VersionString = "5.3.0" },
     @{ Version = "5.4"; VersionString = "5.4.0" },
-    @{ Version = "5.5"; VersionString = "5.5.0" }
+    @{ Version = "5.5"; VersionString = "5.5.0" },
+    @{ Version = "5.6"; VersionString = "5.6.0" },
+    @{ Version = "5.7"; VersionString = "5.7.0" }
 )
 
 Write-Host "================================================" -ForegroundColor Cyan
@@ -27,7 +29,7 @@ Write-Host ""
 
 # Read original uplugin file
 $UpluginPath = "$PluginSourceDir\$PluginName.uplugin"
-$OriginalUplugin = Get-Content $UpluginPath -Raw | ConvertFrom-Json
+$OriginalUplugin = Get-Content $UpluginPath -Raw -Encoding UTF8 | ConvertFrom-Json
 
 # Create output directory
 if (!(Test-Path $OutputDir)) {
@@ -67,13 +69,17 @@ foreach ($EngineVer in $EngineVersions) {
     # Modify uplugin file, add EngineVersion
     Write-Host "  Setting engine version: $VersionString" -ForegroundColor Green
     $UpluginFilePath = "$TempDir\$PluginName\$PluginName.uplugin"
-    $upluginObj = Get-Content $UpluginFilePath -Raw | ConvertFrom-Json
+    $upluginObj = Get-Content $UpluginFilePath -Raw -Encoding UTF8 | ConvertFrom-Json
     
     # Add EngineVersion field
     $upluginObj | Add-Member -NotePropertyName "EngineVersion" -NotePropertyValue $VersionString -Force
     
-    # Save modified JSON with formatting
-    $upluginObj | ConvertTo-Json -Depth 10 | Set-Content $UpluginFilePath -Encoding UTF8
+    # Save modified JSON with formatting (UTF8 without BOM)
+    $jsonContent = $upluginObj | ConvertTo-Json -Depth 10
+    # Replace escaped characters back to original (e.g., \u0026 -> &)
+    $jsonContent = $jsonContent -replace '\\u0026', '&'
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText($UpluginFilePath, $jsonContent, $utf8NoBom)
     
     # Create ZIP package
     $ZipName = "${PluginName}_UE${Version}_v$($OriginalUplugin.VersionName).zip"
