@@ -1,6 +1,5 @@
-# LanguageOne 打包脚本 - Package Script
-# 用途：创建源码分发包，无版本弹窗
-# Purpose: Create source distribution package without version warning
+# LanguageOne Multi-Version Package Script
+# Create separate packages for each engine version for Fab approval
 
 param(
     [string]$OutputDir = "Packages\Release"
@@ -8,90 +7,103 @@ param(
 
 $PluginName = "LanguageOne"
 $PluginSourceDir = "LanguageOne"
-$Timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-$OutputPath = "$OutputDir\${PluginName}_$Timestamp"
+
+# Supported engine versions
+$EngineVersions = @(
+    @{ Version = "4.26"; VersionString = "4.26.0" },
+    @{ Version = "4.27"; VersionString = "4.27.0" },
+    @{ Version = "5.0"; VersionString = "5.0.0" },
+    @{ Version = "5.1"; VersionString = "5.1.0" },
+    @{ Version = "5.2"; VersionString = "5.2.0" },
+    @{ Version = "5.3"; VersionString = "5.3.0" },
+    @{ Version = "5.4"; VersionString = "5.4.0" },
+    @{ Version = "5.5"; VersionString = "5.5.0" }
+)
 
 Write-Host "================================================" -ForegroundColor Cyan
-Write-Host " LanguageOne Package Script" -ForegroundColor Cyan
+Write-Host " LanguageOne Multi-Version Package Script" -ForegroundColor Cyan
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
 
-# 创建输出目录
+# Read original uplugin file
+$UpluginPath = "$PluginSourceDir\$PluginName.uplugin"
+$OriginalUplugin = Get-Content $UpluginPath -Raw | ConvertFrom-Json
+
+# Create output directory
 if (!(Test-Path $OutputDir)) {
     New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
 }
 
-if (Test-Path $OutputPath) {
-    Write-Host "Removing existing output directory..." -ForegroundColor Yellow
-    Remove-Item -Path $OutputPath -Recurse -Force
-}
-
-Write-Host "Creating package in: $OutputPath" -ForegroundColor Green
-New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null
-
-# 复制插件文件，排除编译产物
-Write-Host "Copying plugin files..." -ForegroundColor Green
-
 $ExcludeDirs = @("Binaries", "Intermediate", ".vs", "Saved", "DerivedDataCache")
 $ExcludeFiles = @("*.pdb", "*.exp", "*.lib", "*.obj")
 
-# 使用 robocopy 复制（排除指定目录）
-$ExcludeDirsParam = $ExcludeDirs | ForEach-Object { "/XD `"$_`"" }
-$ExcludeFilesParam = $ExcludeFiles | ForEach-Object { "/XF `"$_`"" }
-
-$RobocopyCmd = "robocopy `"$PluginSourceDir`" `"$OutputPath\$PluginName`" /E /NFL /NDL /NJH /NJS $ExcludeDirsParam $ExcludeFilesParam"
-Invoke-Expression $RobocopyCmd | Out-Null
-
-if ($LASTEXITCODE -ge 8) {
-    Write-Host "Error during file copy!" -ForegroundColor Red
-    exit 1
+foreach ($EngineVer in $EngineVersions) {
+    $Version = $EngineVer.Version
+    $VersionString = $EngineVer.VersionString
+    
+    Write-Host "================================================" -ForegroundColor Yellow
+    Write-Host " Packaging for UE $Version" -ForegroundColor Yellow
+    Write-Host "================================================" -ForegroundColor Yellow
+    
+    # Create temp directory
+    $TempDir = "$OutputDir\Temp_UE$Version"
+    if (Test-Path $TempDir) {
+        Remove-Item -Path $TempDir -Recurse -Force
+    }
+    New-Item -ItemType Directory -Path $TempDir -Force | Out-Null
+    
+    # Copy plugin files
+    Write-Host "  Copying plugin files..." -ForegroundColor Green
+    $ExcludeDirsParam = $ExcludeDirs | ForEach-Object { "/XD `"$_`"" }
+    $ExcludeFilesParam = $ExcludeFiles | ForEach-Object { "/XF `"$_`"" }
+    $RobocopyCmd = "robocopy `"$PluginSourceDir`" `"$TempDir\$PluginName`" /E /NFL /NDL /NJH /NJS $ExcludeDirsParam $ExcludeFilesParam"
+    Invoke-Expression $RobocopyCmd | Out-Null
+    
+    if ($LASTEXITCODE -ge 8) {
+        Write-Host "  File copy error!" -ForegroundColor Red
+        exit 1
+    }
+    
+    # Modify uplugin file, add EngineVersion
+    Write-Host "  Setting engine version: $VersionString" -ForegroundColor Green
+    $UpluginFilePath = "$TempDir\$PluginName\$PluginName.uplugin"
+    $upluginObj = Get-Content $UpluginFilePath -Raw | ConvertFrom-Json
+    
+    # Add EngineVersion field
+    $upluginObj | Add-Member -NotePropertyName "EngineVersion" -NotePropertyValue $VersionString -Force
+    
+    # Save modified JSON with formatting
+    $upluginObj | ConvertTo-Json -Depth 10 | Set-Content $UpluginFilePath -Encoding UTF8
+    
+    # Create ZIP package
+    $ZipName = "${PluginName}_UE${Version}_v$($OriginalUplugin.VersionName).zip"
+    $ZipPath = "$OutputDir\$ZipName"
+    
+    Write-Host "  Creating ZIP: $ZipName" -ForegroundColor Green
+    if (Test-Path $ZipPath) {
+        Remove-Item $ZipPath -Force
+    }
+    Compress-Archive -Path "$TempDir\*" -DestinationPath $ZipPath -Force
+    
+    # Clean up temp directory
+    Remove-Item -Path $TempDir -Recurse -Force
+    
+    Write-Host "  Done: $ZipName" -ForegroundColor Green
+    Write-Host ""
 }
 
-Write-Host ""
 Write-Host "================================================" -ForegroundColor Green
-Write-Host " Package Created Successfully!" -ForegroundColor Green
+Write-Host " All Packages Created Successfully!" -ForegroundColor Green
 Write-Host "================================================" -ForegroundColor Green
 Write-Host ""
-Write-Host "Output: $OutputPath" -ForegroundColor Cyan
+Write-Host "Output Directory: $OutputDir" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Files included:" -ForegroundColor Yellow
-Get-ChildItem -Path "$OutputPath\$PluginName" -Recurse -File | Select-Object -First 10 | ForEach-Object {
-    Write-Host "  - $($_.FullName.Replace($OutputPath + '\', ''))" -ForegroundColor Gray
+Write-Host "Created Packages:" -ForegroundColor Yellow
+Get-ChildItem -Path $OutputDir -Filter "*.zip" | ForEach-Object {
+    $sizeMB = [math]::Round($_.Length / 1MB, 2)
+    Write-Host "  - $($_.Name) - $sizeMB MB" -ForegroundColor Gray
 }
-$TotalFiles = (Get-ChildItem -Path "$OutputPath\$PluginName" -Recurse -File).Count
-Write-Host "  ... and $($TotalFiles - 10) more files" -ForegroundColor Gray
 Write-Host ""
-
-# 创建 ZIP 包
-Write-Host "Creating ZIP archives..." -ForegroundColor Green
-
-# 1. 带时间戳的归档版本（用于备份）
-$ZipPath = "$OutputDir\${PluginName}_$Timestamp.zip"
-Compress-Archive -Path "$OutputPath\*" -DestinationPath $ZipPath -Force
-Write-Host "  [Archive] $ZipPath" -ForegroundColor Gray
-
-# 2. 固定名称版本（用于 Fab/GitHub Release）
-$ReleaseZipPath = "$OutputDir\${PluginName}.zip"
-Compress-Archive -Path "$OutputPath\*" -DestinationPath $ReleaseZipPath -Force
-Write-Host "  [Release] $ReleaseZipPath" -ForegroundColor Green
-
-Write-Host ""
-Write-Host "================================================" -ForegroundColor Green
-Write-Host " Package Created Successfully!" -ForegroundColor Green
-Write-Host "================================================" -ForegroundColor Green
-Write-Host ""
-Write-Host "发布文件 | Release File:" -ForegroundColor Cyan
-Write-Host "  $ReleaseZipPath" -ForegroundColor Yellow
-Write-Host ""
-Write-Host "备份文件 | Archive File:" -ForegroundColor Cyan
-Write-Host "  $ZipPath" -ForegroundColor Gray
-Write-Host ""
-Write-Host "上传到 Fab/GitHub 时使用: $ReleaseZipPath" -ForegroundColor Green
-Write-Host ""
-
-# 清理临时文件夹
-Write-Host "Cleaning up temporary files..." -ForegroundColor Yellow
-Remove-Item -Path $OutputPath -Recurse -Force
-Write-Host "Temporary folder removed." -ForegroundColor Gray
+Write-Host "Upload each package to Fab for its corresponding engine version" -ForegroundColor Cyan
 Write-Host ""
 
