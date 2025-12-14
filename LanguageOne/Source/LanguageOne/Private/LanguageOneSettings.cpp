@@ -6,7 +6,7 @@ ULanguageOneSettings::ULanguageOneSettings()
 	: TargetEditorLanguage(EEditorLanguage::English)  // 默认目标：英文
 	, CurrentEditorLanguage(TEXT(""))
 	, PreviousLanguage(TEXT("zh-CN"))  // 默认上一次：中文
-	, TranslateProvider(ETranslateProvider::GoogleFree)
+	, TranslateProvider(ETranslateProvider::MicrosoftFree)  // 默认使用微软Edge翻译（免费且稳定）
 	, BaiduAppId(TEXT(""))
 	, BaiduSecretKey(TEXT(""))
 	, GoogleApiKey(TEXT(""))

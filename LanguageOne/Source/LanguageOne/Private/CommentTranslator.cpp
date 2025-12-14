@@ -122,11 +122,150 @@ void FCommentTranslator::TranslateWithGoogleFree(const FString& SourceText, cons
 
 void FCommentTranslator::TranslateWithMicrosoftFree(const FString& SourceText, const FString& TargetLang, FOnTranslationComplete OnComplete, FOnTranslationError OnError)
 {
-	// 使用 MyMemory 翻译 API（免费，无需密钥）
-	// 这是一个公开的翻译服务，每天有配额限制
+	// 使用 Microsoft Edge 浏览器内置翻译接口（无需 Key，免费且稳定）
+	// 这是目前最推荐的免费方案，支持多语言，速度快
+	
+	// 第一步：获取 Authorization Token
+	// 这个 Token 是动态的，必须每次（或定期）获取
+	FString AuthUrl = TEXT("https://edge.microsoft.com/translate/auth");
+	
+	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> AuthRequest = FHttpModule::Get().CreateRequest();
+	AuthRequest->SetURL(AuthUrl);
+	AuthRequest->SetVerb(TEXT("GET"));
+	AuthRequest->SetHeader(TEXT("User-Agent"), TEXT("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0"));
+	
+	AuthRequest->OnProcessRequestComplete().BindLambda([SourceText, TargetLang, OnComplete, OnError](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
+	{
+		if (!bSuccess || !Response.IsValid())
+		{
+			OnError.ExecuteIfBound(TEXT("获取微软翻译授权失败，请检查网络 | Failed to get Microsoft auth"));
+			return;
+		}
+		
+		FString Token = Response->GetContentAsString();
+		if (Token.IsEmpty())
+		{
+			OnError.ExecuteIfBound(TEXT("获取到的微软授权Token为空 | Microsoft auth token is empty"));
+			return;
+		}
+		
+		// 第二步：使用 Token 调用翻译接口
+		// Edge API 需要特定的语言代码格式 (例如中文必须是 zh-Hans)
+		FString EdgeTargetLang = TargetLang;
+		if (EdgeTargetLang == TEXT("zh") || EdgeTargetLang == TEXT("zh-CN")) EdgeTargetLang = TEXT("zh-Hans");
+		
+		// API URL
+		FString TranslateUrl = FString::Printf(TEXT("https://api-edge.cognitive.microsofttranslator.com/translate?from=&to=%s&api-version=3.0&includeSentenceLength=true"), *EdgeTargetLang);
+		
+		TSharedRef<IHttpRequest, ESPMode::ThreadSafe> TransRequest = FHttpModule::Get().CreateRequest();
+		TransRequest->SetURL(TranslateUrl);
+		TransRequest->SetVerb(TEXT("POST"));
+		
+		// 必须带上 Bearer Token
+		TransRequest->SetHeader(TEXT("Authorization"), FString::Printf(TEXT("Bearer %s"), *Token));
+		TransRequest->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+		TransRequest->SetHeader(TEXT("User-Agent"), TEXT("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0"));
+		
+		// 构造请求体 [{"Text": "..."}]
+		TSharedPtr<FJsonObject> TextObj = MakeShareable(new FJsonObject);
+		TextObj->SetStringField(TEXT("Text"), SourceText);
+		TArray<TSharedPtr<FJsonValue>> RequestArray;
+		RequestArray.Add(MakeShareable(new FJsonValueObject(TextObj)));
+		
+		FString RequestBody;
+		TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&RequestBody);
+		FJsonSerializer::Serialize(RequestArray, Writer);
+		
+		TransRequest->SetContentAsString(RequestBody);
+		
+		TransRequest->OnProcessRequestComplete().BindLambda([OnComplete, OnError](FHttpRequestPtr TransReq, FHttpResponsePtr TransResp, bool bTransSuccess)
+		{
+			if (!bTransSuccess || !TransResp.IsValid())
+			{
+				OnError.ExecuteIfBound(TEXT("微软翻译请求失败 | Microsoft Translation request failed"));
+				return;
+			}
+			
+			FString TransRespStr = TransResp->GetContentAsString();
+			TArray<TSharedPtr<FJsonValue>> JsonArray;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(TransRespStr);
+			
+			if (!FJsonSerializer::Deserialize(Reader, JsonArray) || JsonArray.Num() == 0)
+			{
+				OnError.ExecuteIfBound(TEXT("解析微软翻译响应失败 | Failed to parse Microsoft response"));
+				return;
+			}
+			
+			// 响应格式: [{"translations":[{"text":"..."}]}]
+			TSharedPtr<FJsonObject> FirstItem = JsonArray[0]->AsObject();
+			if (FirstItem.IsValid())
+			{
+				const TArray<TSharedPtr<FJsonValue>>* Translations;
+				if (FirstItem->TryGetArrayField(TEXT("translations"), Translations) && Translations->Num() > 0)
+				{
+					TSharedPtr<FJsonObject> FirstTrans = (*Translations)[0]->AsObject();
+					if (FirstTrans.IsValid())
+					{
+						FString TranslatedText = FirstTrans->GetStringField(TEXT("text"));
+						if (!TranslatedText.IsEmpty())
+						{
+							OnComplete.ExecuteIfBound(TranslatedText);
+							return;
+						}
+					}
+				}
+			}
+			
+			OnError.ExecuteIfBound(TEXT("未找到翻译结果 | No translation result found"));
+		});
+		
+		TransRequest->ProcessRequest();
+	});
+	
+	AuthRequest->ProcessRequest();
+}
+
+void FCommentTranslator::TranslateWithYoudaoFree(const FString& SourceText, const FString& TargetLang, FOnTranslationComplete OnComplete, FOnTranslationError OnError)
+{
+	// 使用 MyMemory 翻译 API（免费，无需密钥，作为备用）
+	// 注意：MyMemory 不支持 auto 源语言检测，需要手动检测
+	
+	// 简单的语言检测逻辑
+	FString SourceLang = TEXT("en");  // 默认英文
+	
+	for (int32 i = 0; i < SourceText.Len(); i++)
+	{
+		TCHAR Char = SourceText[i];
+		// 中文字符 (CJK统一汉字: 0x4E00 - 0x9FFF)
+		if (Char >= 0x4E00 && Char <= 0x9FFF)
+		{
+			SourceLang = TEXT("zh-CN");
+			break;
+		}
+		// 日文 (平假名/片假名)
+		else if ((Char >= 0x3040 && Char <= 0x309F) || (Char >= 0x30A0 && Char <= 0x30FF))
+		{
+			SourceLang = TEXT("ja");
+			break;
+		}
+		// 韩文
+		else if (Char >= 0xAC00 && Char <= 0xD7AF)
+		{
+			SourceLang = TEXT("ko");
+			break;
+		}
+		// 俄文
+		else if (Char >= 0x0400 && Char <= 0x04FF)
+		{
+			SourceLang = TEXT("ru");
+			break;
+		}
+	}
+	
 	FString EncodedText = LANGUAGEONE_URL_ENCODE(SourceText);
-	FString Url = FString::Printf(TEXT("https://api.mymemory.translated.net/get?q=%s&langpair=auto|%s"),
-		*EncodedText, *TargetLang);
+	// 使用 langpair=source|target 格式
+	FString Url = FString::Printf(TEXT("https://api.mymemory.translated.net/get?q=%s&langpair=%s|%s"),
+		*EncodedText, *SourceLang, *TargetLang);
 
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = FHttpModule::Get().CreateRequest();
 	HttpRequest->SetURL(Url);
@@ -149,68 +288,25 @@ void FCommentTranslator::TranslateWithMicrosoftFree(const FString& SourceText, c
 			return;
 		}
 
-		// MyMemory API 响应格式：{"responseData":{"translatedText":"..."}}
-		TSharedPtr<FJsonObject> ResponseData = JsonObject->GetObjectField(TEXT("responseData"));
-		if (ResponseData.IsValid())
+		// 检查 MyMemory 错误状态
+		if (JsonObject->HasField(TEXT("responseStatus")))
 		{
-			FString TranslatedText = ResponseData->GetStringField(TEXT("translatedText"));
-			if (!TranslatedText.IsEmpty())
+			int32 Status = JsonObject->GetIntegerField(TEXT("responseStatus"));
+			if (Status != 200)
 			{
-				OnComplete.ExecuteIfBound(TranslatedText);
+				FString ErrorMsg = JsonObject->HasField(TEXT("responseDetails")) 
+					? JsonObject->GetStringField(TEXT("responseDetails"))
+					: TEXT("翻译服务返回错误 | Translation service error");
+				OnError.ExecuteIfBound(ErrorMsg);
 				return;
 			}
 		}
 
-		OnError.ExecuteIfBound(TEXT("未找到翻译结果 | No translation result found"));
-	});
-
-	HttpRequest->ProcessRequest();
-}
-
-void FCommentTranslator::TranslateWithYoudaoFree(const FString& SourceText, const FString& TargetLang, FOnTranslationComplete OnComplete, FOnTranslationError OnError)
-{
-	// 使用 LibreTranslate 公开服务（完全免费开源）
-	// 使用公共实例：translate.argosopentech.com 或 libretranslate.de
-	FString Url = TEXT("https://translate.argosopentech.com/translate");
-
-	// 创建 JSON 请求体
-	TSharedPtr<FJsonObject> RequestObj = MakeShareable(new FJsonObject);
-	RequestObj->SetStringField(TEXT("q"), SourceText);
-	RequestObj->SetStringField(TEXT("source"), TEXT("auto"));
-	RequestObj->SetStringField(TEXT("target"), TargetLang);
-	RequestObj->SetStringField(TEXT("format"), TEXT("text"));
-
-	FString RequestBody;
-	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&RequestBody);
-	FJsonSerializer::Serialize(RequestObj.ToSharedRef(), Writer);
-
-	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = FHttpModule::Get().CreateRequest();
-	HttpRequest->SetURL(Url);
-	HttpRequest->SetVerb(TEXT("POST"));
-	HttpRequest->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
-	HttpRequest->SetContentAsString(RequestBody);
-	HttpRequest->OnProcessRequestComplete().BindLambda([OnComplete, OnError](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
-	{
-		if (!bSuccess || !Response.IsValid())
+		// 解析结果 {"responseData":{"translatedText":"..."}}
+		TSharedPtr<FJsonObject> ResponseData = JsonObject->GetObjectField(TEXT("responseData"));
+		if (ResponseData.IsValid())
 		{
-			OnError.ExecuteIfBound(TEXT("网络请求失败 | Network request failed"));
-			return;
-		}
-
-		FString ResponseStr = Response->GetContentAsString();
-		TSharedPtr<FJsonObject> JsonObject;
-		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseStr);
-
-		if (!FJsonSerializer::Deserialize(Reader, JsonObject) || !JsonObject.IsValid())
-		{
-			OnError.ExecuteIfBound(TEXT("解析响应失败 | Failed to parse response"));
-			return;
-		}
-
-		// LibreTranslate API 响应格式：{"translatedText":"..."}
-		if (JsonObject->HasField(TEXT("translatedText")))
-		{
-			FString TranslatedText = JsonObject->GetStringField(TEXT("translatedText"));
+			FString TranslatedText = ResponseData->GetStringField(TEXT("translatedText"));
 			if (!TranslatedText.IsEmpty())
 			{
 				OnComplete.ExecuteIfBound(TranslatedText);

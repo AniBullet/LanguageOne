@@ -22,9 +22,9 @@ enum class ETranslateTargetLanguage : uint8
 UENUM(BlueprintType)
 enum class ETranslateProvider : uint8
 {
-	GoogleFree UMETA(DisplayName = "谷歌翻译(免费) | Google Translate (Free)"),
-	MicrosoftFree UMETA(DisplayName = "微软翻译(免费) | Microsoft Translator (Free)"),
-	YoudaoFree UMETA(DisplayName = "有道翻译(免费) | Youdao Translate (Free)"),
+	GoogleFree UMETA(DisplayName = "谷歌翻译(Web版) | Google Translate (Web)"),
+	MicrosoftFree UMETA(DisplayName = "微软Edge翻译(推荐) | Microsoft Edge (Recommended)"),
+	YoudaoFree UMETA(DisplayName = "MyMemory翻译(备用) | MyMemory (Backup)"),
 	Baidu UMETA(DisplayName = "百度翻译(需API) | Baidu (API Required)"),
 	Google UMETA(DisplayName = "Google翻译(需API) | Google (API Required)"),
 	Custom UMETA(DisplayName = "自定义API | Custom API")

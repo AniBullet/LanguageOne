@@ -16,7 +16,7 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 
 > [!NOTE]
 > **📢 声明 | Disclaimer**  
-> 本人代码能力一般，插件使用 AI 辅助编写，主要用于个人学习和交流。  
+> 插件使用 AI 辅助编写，主要用于个人学习和交流。  
 > This plugin is AI-assisted and created for personal learning purposes.
 
 ---
@@ -32,7 +32,7 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 
 **支持语言：** 中文(简/繁)、英语、日语、韩语、德语、法语、西班牙语、俄语、葡萄牙语、意大利语
 
-**翻译服务：** 谷歌（免费）· 微软（免费）· LibreTranslate（免费）· 百度 API · Google API
+**翻译服务：** 微软Edge（推荐）· 谷歌翻译 · MyMemory · 百度API · GoogleAPI
 
 ### 🚀 快速开始
 
@@ -76,7 +76,7 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 
 **Languages:** Chinese (Simplified/Traditional), English, Japanese, Korean, German, French, Spanish, Russian, Portuguese, Italian
 
-**Translation:** Google (Free) · Microsoft (Free) · LibreTranslate (Free) · Baidu API · Google API
+**Translation:** Microsoft Edge (Recommended) · Google Translate · MyMemory · Baidu API · Google API
 
 ### 🚀 Quick Start
 

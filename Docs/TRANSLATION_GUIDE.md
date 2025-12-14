@@ -59,9 +59,9 @@ Translate blueprint node comments, supports selected nodes or entire graph.
 ### Translation Service
 
 **Free Services (Recommended, No Setup):**
-- **Google Translate** - Default, high quality, fast
-- **Microsoft Translator** - Stable, reliable
-- **LibreTranslate** - Open source
+- **Microsoft Edge Translator** - Recommended by default, high quality, fast, works in China
+- **Google Translate** - Classic service, stable quality (may be limited in China)
+- **MyMemory Translator** - Backup option, no API key required
 
 **API Services (Setup Required):**
 - **Baidu Translation** - Free 2M chars/month
@@ -72,7 +72,7 @@ Translate blueprint node comments, supports selected nodes or entire graph.
 
 | Option | Description | Recommended |
 |--------|-------------|:-----------:|
-| Translation Service | Choose translation service | Google (Free) |
+| Translation Service | Choose translation service | Microsoft Edge |
 | Translate To | Target language | As needed |
 | Keep Original | Show both original and translated | ✅ |
 | Translation Above | Translation position | Personal preference |
@@ -203,6 +203,6 @@ Select translated nodes → `Ctrl + T` → Restore
 
 **Issues:** [GitHub Issues](https://github.com/AniBullet/LanguageOne/issues)
 
-**If helpful, please Star ⭐**
+**Open Source · Contributions Welcome · Star ⭐**
 
 </div>
