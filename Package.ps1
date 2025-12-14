@@ -30,6 +30,27 @@ Write-Host ""
 # Read original uplugin file
 $UpluginPath = "$PluginSourceDir\$PluginName.uplugin"
 $OriginalUplugin = Get-Content $UpluginPath -Raw -Encoding UTF8 | ConvertFrom-Json
+$PluginVersion = $OriginalUplugin.VersionName
+
+# Auto-update version in documentation files
+Write-Host "Updating documentation version to v$PluginVersion..." -ForegroundColor Cyan
+$DocFiles = @(
+    @{ Path = "Docs\翻译功能使用说明.md"; Pattern = "### v(\d+\.\d+) \(当前\)"; Replacement = "### v$PluginVersion (当前)" },
+    @{ Path = "Docs\TRANSLATION_GUIDE.md"; Pattern = "### v(\d+\.\d+) \(Current\)"; Replacement = "### v$PluginVersion (Current)" }
+)
+
+foreach ($Doc in $DocFiles) {
+    if (Test-Path $Doc.Path) {
+        $content = Get-Content $Doc.Path -Raw -Encoding UTF8
+        $newContent = $content -replace $Doc.Pattern, $Doc.Replacement
+        if ($content -ne $newContent) {
+            $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+            [System.IO.File]::WriteAllText($Doc.Path, $newContent, $utf8NoBom)
+            Write-Host "  Updated: $($Doc.Path)" -ForegroundColor Green
+        }
+    }
+}
+Write-Host ""
 
 # Create output directory
 if (!(Test-Path $OutputDir)) {

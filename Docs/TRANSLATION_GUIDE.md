@@ -182,7 +182,9 @@ Select translated nodes → `Ctrl + T` → Restore
 
 ## 📝 Version History
 
-### v1.2 (Current)
+### v1.3 (Current)
+
+### v1.2
 - Blueprint comment translation
 - 3 free translation services
 - 11 editor language support

@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 2,
-	"VersionName": "1.2",
+	"VersionName": "1.3",
 	"FriendlyName": "LanguageOne",
 	"Description": "一键中英互切，蓝图注释翻译，支持快捷键(Language Switcher & Blueprint Comment Translator, One click, Customizable shortcut keys.)",
 	"Category": "Editor",
