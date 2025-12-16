@@ -6,6 +6,9 @@
 #include "LanguageOneSettings.h"
 #include "LanguageOneCompatibility.h"
 #include "CommentTranslator.h"
+#include "AssetTranslator.h"
+#include "AssetTranslatorUI.h"
+#include "Toolkits/AssetEditorToolkit.h"
 #include "Misc/MessageDialog.h"
 #include "ToolMenus.h"
 #include "LevelEditor.h"
@@ -25,6 +28,11 @@
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
 #include "Input/Events.h"
+#include "ContentBrowserModule.h"
+#include "IContentBrowserSingleton.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "Subsystems/AssetEditorSubsystem.h"
 
 static const FName LanguageOneTabName("LanguageOne");
 
@@ -58,7 +66,7 @@ public:
 			return true;
 		}
 
-		// Ctrl + T - 翻译注释
+		// Ctrl + T - 翻译蓝图节点注释
 		if (InKeyEvent.GetKey() == EKeys::T && InKeyEvent.IsControlDown() && !InKeyEvent.IsAltDown() && !InKeyEvent.IsShiftDown())
 		{
 			if (Module)
@@ -96,7 +104,7 @@ void FLanguageOneModule::StartupModule()
 		FCanExecuteAction());
 	UE_LOG(LogTemp, Log, TEXT("Mapped PluginAction (Switch Language): Alt+Q"));
 	
-	// 注册翻译注释命令
+	// 注册翻译蓝图注释命令
 	PluginCommands->MapAction(
 		FLanguageOneCommands::Get().TranslateCommentAction,
 		FExecuteAction::CreateRaw(this, &FLanguageOneModule::TranslateComment),
@@ -104,6 +112,9 @@ void FLanguageOneModule::StartupModule()
 	UE_LOG(LogTemp, Log, TEXT("Mapped TranslateCommentAction (Translate Comment): Ctrl+T"));
 
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FLanguageOneModule::RegisterMenus));
+	
+	// 注册 Content Browser 扩展
+	RegisterContentBrowserExtensions();
 
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
 		"LanguageOne",
@@ -257,7 +268,7 @@ void FLanguageOneModule::RegisterMenus()
 				FToolMenuEntry TranslateEntry = FToolMenuEntry::InitToolBarButton(
 					FLanguageOneCommands::Get().TranslateCommentAction,
 					LOCTEXT("TranslateComment", "Translate Comment"),
-					LOCTEXT("TranslateCommentTooltip", "Translate blueprint comments (Ctrl+T)"),
+					LOCTEXT("TranslateCommentTooltip", "Translate blueprint node comments (Ctrl+T)"),
 					FSlateIcon(FLanguageOneStyle::GetStyleSetName(), "LanguageOne.TranslateCommentAction")
 				);
 				TranslateEntry.SetCommandList(PluginCommands);
@@ -303,6 +314,130 @@ void FLanguageOneModule::RegisterMenus()
 	}
 	
 	UE_LOG(LogTemp, Log, TEXT("LanguageOne menus registered successfully"));
+}
+
+void FLanguageOneModule::RegisterContentBrowserExtensions()
+{
+	UE_LOG(LogTemp, Log, TEXT("LanguageOne registering Content Browser extensions"));
+
+	// 注册 Content Browser 资产菜单扩展
+	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
+	
+	TArray<FContentBrowserMenuExtender_SelectedAssets>& MenuExtenders = ContentBrowserModule.GetAllAssetViewContextMenuExtenders();
+	
+	MenuExtenders.Add(FContentBrowserMenuExtender_SelectedAssets::CreateLambda(
+		[this](const TArray<FAssetData>& SelectedAssets)
+		{
+			TSharedRef<FExtender> Extender = MakeShareable(new FExtender());
+			
+			// 检查是否有可翻译的资产
+			bool bHasTranslatableAssets = false;
+			for (const FAssetData& AssetData : SelectedAssets)
+			{
+				if (FAssetTranslator::CanTranslateAsset(AssetData))
+				{
+					bHasTranslatableAssets = true;
+					break;
+				}
+			}
+			
+			if (bHasTranslatableAssets)
+			{
+				Extender->AddMenuExtension(
+					"CommonAssetActions",
+					EExtensionHook::After,
+					nullptr,
+					FMenuExtensionDelegate::CreateLambda([this, SelectedAssets](FMenuBuilder& MenuBuilder)
+					{
+						this->OnExtendContentBrowserAssetSelectionMenu(MenuBuilder, SelectedAssets);
+					})
+				);
+			}
+			
+			return Extender;
+		}
+	));
+	
+	UE_LOG(LogTemp, Log, TEXT("LanguageOne Content Browser extensions registered"));
+}
+
+void FLanguageOneModule::OnExtendContentBrowserAssetSelectionMenu(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets)
+{
+	MenuBuilder.BeginSection("LanguageOneAssetActions", FText::FromString(TEXT("LanguageOne 翻译 | Translation")));
+	{
+		// 添加资产翻译工具菜单项
+		MenuBuilder.AddMenuEntry(
+			FText::FromString(TEXT("资产翻译工具 | Asset Translation Tool")),
+			FText::FromString(TEXT("打开资产翻译工具，可选择翻译或还原\nOpen asset translation tool, choose to translate or restore\n\n支持/Supported:\nString Table, Data Table, Widget Blueprint, Blueprint, Material, Texture")),
+			FSlateIcon(FLanguageOneStyle::GetStyleSetName(), "LanguageOne.TranslateCommentAction"),
+			FUIAction(
+				FExecuteAction::CreateLambda([SelectedAssets]()
+				{
+					FAssetTranslatorUI::ShowAssetTranslationTool(SelectedAssets);
+				}),
+				FCanExecuteAction::CreateLambda([SelectedAssets]()
+				{
+					// 检查是否有可翻译的资产
+					for (const FAssetData& AssetData : SelectedAssets)
+					{
+						if (FAssetTranslator::CanTranslateAsset(AssetData))
+						{
+							return true;
+						}
+					}
+					return false;
+				})
+			)
+		);
+	}
+	MenuBuilder.EndSection();
+}
+
+void FLanguageOneModule::TranslateCurrentAsset()
+{
+	UE_LOG(LogTemp, Log, TEXT("TranslateCurrentAsset called"));
+	
+	// 获取当前编辑的资产
+	UAssetEditorSubsystem* AssetEditorSubsystem = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>();
+	if (!AssetEditorSubsystem)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to get AssetEditorSubsystem"));
+		return;
+	}
+	
+	TArray<UObject*> EditedAssets = AssetEditorSubsystem->GetAllEditedAssets();
+	if (EditedAssets.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No assets currently being edited"));
+		
+		FNotificationInfo Info(FText::FromString(TEXT("没有打开的资产 | No assets are currently open")));
+		Info.ExpireDuration = 3.0f;
+		FSlateNotificationManager::Get().AddNotification(Info);
+		return;
+	}
+	
+	// 转换为 FAssetData 数组
+	TArray<FAssetData> AssetsToTranslate;
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
+	
+	for (UObject* Asset : EditedAssets)
+	{
+		if (Asset)
+		{
+			FAssetData AssetData = AssetRegistry.GetAssetByObjectPath(FSoftObjectPath(Asset));
+			if (AssetData.IsValid())
+			{
+				AssetsToTranslate.Add(AssetData);
+			}
+		}
+	}
+	
+	if (AssetsToTranslate.Num() > 0)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Found %d assets to translate"), AssetsToTranslate.Num());
+		FAssetTranslator::TranslateSelectedAssets(AssetsToTranslate);
+	}
 }
 
 FString GetLanguageCode(EEditorLanguage Language)
@@ -390,7 +525,117 @@ void FLanguageOneModule::SwitchLanguage()
 void FLanguageOneModule::TranslateComment()
 {
 	UE_LOG(LogTemp, Log, TEXT("TranslateComment called"));
+	
+	// 优先尝试翻译当前活动的资产编辑器（如 StringTable, DataTable）
+	if (TranslateActiveAssetEditor())
+	{
+		return;
+	}
+
+	// 专注于蓝图节点注释的翻译/还原
+	// 资产翻译通过 Content Browser 右键菜单进行
 	TranslateSelectedNodes();
+}
+
+bool FLanguageOneModule::TranslateActiveAssetEditor()
+{
+	if (!FSlateApplication::IsInitialized())
+	{
+		return false;
+	}
+
+	TSharedPtr<SWidget> FocusedWidget = FSlateApplication::Get().GetKeyboardFocusedWidget();
+	if (!FocusedWidget.IsValid())
+	{
+		return false;
+	}
+
+	UAssetEditorSubsystem* AssetEditorSubsystem = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>();
+	if (!AssetEditorSubsystem)
+	{
+		return false;
+	}
+
+	TArray<UObject*> EditedAssets = AssetEditorSubsystem->GetAllEditedAssets();
+	TSet<FAssetEditorToolkit*> CheckedToolkits;
+
+	for (UObject* Asset : EditedAssets)
+	{
+		IAssetEditorInstance* EditorInstance = AssetEditorSubsystem->FindEditorForAsset(Asset, false);
+		if (!EditorInstance)
+		{
+			continue;
+		}
+
+		// Check if this editor owns the focused widget
+		// Most editors inherit from FAssetEditorToolkit
+		FAssetEditorToolkit* Toolkit = static_cast<FAssetEditorToolkit*>(EditorInstance);
+		if (CheckedToolkits.Contains(Toolkit))
+		{
+			continue;
+		}
+		CheckedToolkits.Add(Toolkit);
+
+		TSharedPtr<FTabManager> TabManager = Toolkit->GetTabManager();
+		if (TabManager.IsValid())
+		{
+			// 检查焦点 Widget 是否在该编辑器的 Widget 树中
+			TSharedPtr<SDockTab> OwnerTab = TabManager->GetOwnerTab();
+            
+			bool bIsDescendant = false;
+			if (OwnerTab.IsValid())
+			{
+				TSharedPtr<SWidget> ParentContent = OwnerTab->GetContent();
+				TSharedPtr<SWidget> CurrentWidget = FocusedWidget;
+				
+				// 手动检查父子关系，因为 SWidget::IsDescendantOf 不是公开 API
+				while (CurrentWidget.IsValid())
+				{
+					if (CurrentWidget == ParentContent)
+					{
+						bIsDescendant = true;
+						break;
+					}
+					CurrentWidget = CurrentWidget->GetParentWidget();
+				}
+			}
+
+			if (bIsDescendant)
+			{
+				UE_LOG(LogTemp, Log, TEXT("Found active asset editor for: %s"), *Asset->GetName());
+				
+				TArray<FAssetData> AssetsToTranslate;
+				FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+				IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
+				
+				// Iterate all edited assets to find those belonging to this editor instance
+				// This avoids using GetEditingObjects() which might be protected or unavailable in IAssetEditorInstance
+				for (UObject* EditedAsset : EditedAssets)
+				{
+					if (AssetEditorSubsystem->FindEditorForAsset(EditedAsset, false) == EditorInstance)
+					{
+						FAssetData AssetData = AssetRegistry.GetAssetByObjectPath(FSoftObjectPath(EditedAsset));
+						if (AssetData.IsValid())
+						{
+							AssetsToTranslate.Add(AssetData);
+						}
+					}
+				}
+
+				if (AssetsToTranslate.Num() > 0)
+				{
+					// 编辑器中触发，开启静默模式，开启Toggle逻辑(自动判断还原)
+					// 注意：目前 TranslateSelectedAssets 内部没有实现 Toggle 逻辑，
+					// 但我们传 true 进去作为 bIsFromEditor 标志，
+					// 在 TranslateSelectedAssets 内部我们可以根据此标志决定行为
+					FAssetTranslator::TranslateSelectedAssets(AssetsToTranslate, true);
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
 }
 
 void FLanguageOneModule::TranslateSelectedNodes()
@@ -630,25 +875,25 @@ void FLanguageOneModule::TranslateSelectedNodes()
 							return;
 						}
 						
-						UEdGraphNode* NodeToModify = WeakNode.Get();
-						const ULanguageOneSettings* Settings = GetDefault<ULanguageOneSettings>();
-						FString NewComment;
-						
-						if (Settings->bKeepOriginalText)
-						{
-							if (Settings->bTranslationAboveOriginal)
-							{
-								NewComment = FString::Printf(TEXT("%s\n---\n%s"), *TranslatedText, *NodeComment);
-							}
-							else
-							{
-								NewComment = FString::Printf(TEXT("%s\n---\n%s"), *NodeComment, *TranslatedText);
-							}
-						}
-						else
-						{
-							NewComment = TranslatedText;
-						}
+					UEdGraphNode* NodeToModify = WeakNode.Get();
+					const ULanguageOneSettings* Settings = GetDefault<ULanguageOneSettings>();
+					FString NewComment;
+					
+					const TCHAR HiddenStartMarker[] = { 0x200B, 0x200C, 0 }; // ZWSP + ZWNJ
+					const TCHAR HiddenEndMarker[] = { 0x200B, 0x200D, 0 };   // ZWSP + ZWJ
+					const FString HiddenStart(HiddenStartMarker);
+					const FString HiddenEnd(HiddenEndMarker);
+					
+					if (Settings->bTranslationAboveOriginal)
+					{
+						// 译文在上方：译文\n---\n标记开始原文标记结束
+						NewComment = FString::Printf(TEXT("%s\n---\n%s%s%s"), *TranslatedText, *HiddenStart, *NodeComment, *HiddenEnd);
+					}
+					else
+					{
+						// 译文在下方（默认）：标记开始原文标记结束\n---\n译文
+						NewComment = FString::Printf(TEXT("%s%s%s\n---\n%s"), *HiddenStart, *NodeComment, *HiddenEnd, *TranslatedText);
+					}
 
 						NodeToModify->Modify();
 						NodeToModify->NodeComment = NewComment;

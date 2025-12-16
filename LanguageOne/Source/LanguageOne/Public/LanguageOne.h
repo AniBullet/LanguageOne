@@ -25,9 +25,15 @@ public:
 private:
 
 	void RegisterMenus();
+	void RegisterContentBrowserExtensions();
 	void TranslateSelectedNodes();
+	void TranslateCurrentAsset();
+	bool TranslateActiveAssetEditor();
 	bool IsNodeTranslated(UEdGraphNode* Node);
 	void RestoreNodeComment(UEdGraphNode* Node);
+	
+	/** Content Browser asset context menu handler */
+	void OnExtendContentBrowserAssetSelectionMenu(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets);
 
 private:
 	TSharedPtr<class FUICommandList> PluginCommands;

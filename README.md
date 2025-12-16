@@ -29,6 +29,7 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 |:---:|:---|:---:|
 | 🌐 语言切换 | 11 种语言双向切换 | `Alt + Q` |
 | 🔄 注释翻译 | 免费翻译蓝图注释 | `Ctrl + T` |
+| 📦 资产翻译 | 翻译资产中的文本内容 | 右键菜单 |
 
 **支持语言：** 中文(简/繁)、英语、日语、韩语、德语、法语、西班牙语、俄语、葡萄牙语、意大利语
 
@@ -40,8 +41,8 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 
 **使用：**
 - `Alt + Q` - 切换语言
-- `Ctrl + T` - 翻译注释（选中节点=翻译选中，未选中=翻译全图）
-- 再按一次 = 还原
+- `Ctrl + T` - 翻译蓝图节点注释（选中=部分，未选=全图，再按=还原）
+- 右键资产 - 批量翻译资产（String Table、Data Table、Widget、Blueprint 等）
 
 **设置：** `编辑 > 编辑器偏好设置 > 插件 > LanguageOne`
 
@@ -61,6 +62,12 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 
 ### 📝 更新日志
 
+**最新版本 v1.4:**
+- ✨ 全新资产翻译工具窗口，智能批量处理
+- 🔄 智能翻译/切换/还原/清除功能
+- 📊 实时进度显示，操作结果一目了然
+- 🎨 优化界面交互，使用体验更流畅
+
 查看完整更新记录：[GitHub Releases](https://github.com/AniBullet/LanguageOne/releases)
 
 ---
@@ -73,6 +80,7 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 |:---:|:---|:---:|
 | 🌐 Language Switch | Toggle between 11 languages | `Alt + Q` |
 | 🔄 Comment Translation | Free blueprint comment translation | `Ctrl + T` |
+| 📦 Asset Translation | Translate text content in assets | Context Menu |
 
 **Languages:** Chinese (Simplified/Traditional), English, Japanese, Korean, German, French, Spanish, Russian, Portuguese, Italian
 
@@ -84,8 +92,8 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 
 **Usage:**
 - `Alt + Q` - Switch language
-- `Ctrl + T` - Translate comments (selected nodes or entire graph)
-- Press again = Restore
+- `Ctrl + T` - Translate blueprint node comments (selected=partial, none=all, press again=restore)
+- Right-click assets - Batch translate assets (String Table, Data Table, Widget, Blueprint, etc.)
 
 **Settings:** `Edit > Editor Preferences > Plugins > LanguageOne`
 
@@ -94,6 +102,12 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 [Full Guide](Docs/TRANSLATION_GUIDE.md)
 
 ### 📝 Changelog
+
+**Latest v1.4:**
+- ✨ Brand new Asset Translation Tool with smart batch processing
+- 🔄 Smart Translate/Toggle/Restore/Clear functions
+- 📊 Real-time progress display for clear operation results
+- 🎨 Optimized UI interaction for smoother experience
 
 See full history: [GitHub Releases](https://github.com/AniBullet/LanguageOne/releases)
 

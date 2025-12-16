@@ -13,8 +13,10 @@ ULanguageOneSettings::ULanguageOneSettings()
 	, CustomApiUrl(TEXT(""))
 	, CustomApiKey(TEXT(""))
 	, TargetLanguage(ETranslateTargetLanguage::Chinese)
-	, bKeepOriginalText(true)
-	, bTranslationAboveOriginal(false)
+	, bTranslationAboveOriginal(false)  // 默认译文在下方（原文在上方）
+	, bConfirmBeforeAssetTranslation(false)  // 默认不需要确认
+	, bAutoSaveTranslatedAssets(false)  // 默认不自动保存（让用户自己保存）
+	, bVerboseAssetTranslationLog(false)  // 默认不显示详细日志
 {
 }
 

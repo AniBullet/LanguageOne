@@ -8,6 +8,9 @@ Quickly switch between two languages, supports 11 languages.
 ### Comment Translation
 Translate blueprint node comments, supports selected nodes or entire graph.
 
+### Asset Translation
+Translate text content in various UE assets.
+
 ---
 
 ## 🚀 Basic Usage
@@ -27,6 +30,64 @@ Translate blueprint node comments, supports selected nodes or entire graph.
 - English, Japanese, Korean
 - German, French, Spanish, Russian
 - Portuguese, Italian
+
+---
+
+### Translate Asset Content
+
+**Feature:** Batch translate text content in various UE assets using the Asset Translation Tool
+
+**Supported Asset Types:**
+- **String Table** - Translate all string entries (original text preserved with zero-width markers)
+- **Data Table** - Translate text fields
+- **Widget Blueprint** - Translate UI widget text
+- **Blueprint** - Translate variable descriptions, function comments, node comments
+- **Other Assets** - Translate asset metadata
+
+**How to Use:**
+1. Select assets in Content Browser (multi-select supported)
+2. Right-click on assets
+3. Choose "Translate Asset | 翻译资产"
+4. **Asset Translation Tool Window** opens
+
+**Asset Translation Tool Window Features:**
+
+The tool window displays:
+- 📦 **Processable Assets**: Number of supported assets
+- ⚠ **Unsupported Assets**: Automatically filtered out (e.g., unsupported asset types)
+- 💡 **Real-time Tips**: Current operation hints
+
+**Available Operations:**
+
+| Button | Function | Use Case |
+|--------|----------|----------|
+| **🌐 Translate/Toggle** | Smart button that auto-selects operation based on asset state | Main action button |
+| **🔄 Restore** | Remove translation, restore to original | When restoration needed |
+| **🗑️ Clear Original** | Permanently delete original text, keep only translation (dangerous) | After confirming translation quality |
+| **Close** | Manually close tool window | After completing operations |
+
+**Smart Behavior of Translate/Toggle Button:**
+- ✅ **All Untranslated** → Start translating all assets
+- ✅ **All Have Translation** → Toggle display mode (swap original/translation position)
+- ✅ **Mixed State** → Smart handling: translate untranslated, toggle translated
+
+**Progress Display:**
+The tool window bottom shows real-time progress:
+- ✓ **Success**: Successfully processed assets
+- 🔄 **Has Translation**: Assets with display mode toggled
+- ✗ **Failed**: Failed asset count
+- ⚠ **Unsupported**: Unsupported asset count (fixed value)
+
+After completion, shows summary like:
+- "✓ Completed! 5 assets processed successfully"
+- "✓ Toggled display mode for 3 assets"
+
+**Technical Details:**
+- **Bilingual Format**: Uses `Translation\n---\nOriginal` format, original marked with zero-width characters (`ZWSP+ZWNJ...ZWSP+ZWJ`)
+- **Data Table** auto-detects `FText` fields and `FString` fields containing `text`, `desc`, `comment` keywords
+- **Widget Blueprint** supports `UTextBlock`, `UEditableText`, `UButton`, `UCheckBox`, etc.
+- **Blueprint** uses safe metadata access, avoiding crashes with special blueprint types like ControlRig
+- **Real-time Status Detection**: Tool detects asset translation status in real-time, recognizes external modifications correctly
 
 ---
 
@@ -70,33 +131,50 @@ Translate blueprint node comments, supports selected nodes or entire graph.
 
 ### Translation Options
 
+**Comment Translation:**
 | Option | Description | Recommended |
 |--------|-------------|:-----------:|
 | Translation Service | Choose translation service | Microsoft Edge |
 | Translate To | Target language | As needed |
-| Keep Original | Show both original and translated | ✅ |
-| Translation Above | Translation position | Personal preference |
+| Translation Above | Translation position (original always preserved) | Personal preference |
+
+**Asset Translation:**
+| Option | Description | Recommended |
+|--------|-------------|:-----------:|
+| Enable Asset Translation | Show translation option in context menu | ✅ |
+| Confirm Before Translation | Show confirmation dialog before batch translation | Personal preference |
+| Auto Save | Auto-save assets after translation | ❌ |
+| Verbose Logging | Show detailed translation logs | ✅ |
+
+**Note:** Since v1.4, asset translation preserves original text by default (using zero-width character markers), allowing display toggle or restoration anytime. To permanently delete original text, use the "Clear Original" button in the tool window.
 
 ### Translation Result Examples
 
-**Keep Original + Translation Below:**
+**Translation Below (Default):**
 ```
 Original English comment
 ---
 翻译后的中文注释
 ```
 
-**Keep Original + Translation Above:**
+**Translation Above (Setting Enabled):**
 ```
 翻译后的中文注释
 ---
 Original English comment
 ```
 
-**Translation Only:**
+**After Clearing Original (Permanent):**
 ```
 翻译后的中文注释
 ```
+
+**Technical Notes:**
+- Original text marked with zero-width characters (`ZWSP+ZWNJ...ZWSP+ZWJ`), invisible but programmatically detectable
+- `---` serves as visible separator for readability
+- Can toggle display order anytime using "Translate/Toggle" button
+- Use "Restore" button to revert to pure original text
+- Use "Clear Original" button to permanently delete original markers
 
 ---
 
@@ -139,16 +217,43 @@ Original English comment
 Open blueprint → Press `Ctrl + T` directly → Done
 
 ### 2. Translate Specific Nodes
-Ctrl + Click to select → `Ctrl + T`
+Ctrl + Click to select nodes → `Ctrl + T`
 
 ### 3. Compare with Original
 Check "Keep Original" in settings → View side by side
 
-### 4. Batch Restore
+### 4. Batch Restore Comments
 Select translated nodes → `Ctrl + T` → Restore
 
-### 5. Customize Shortcuts
+### 5. Translate String Table
+Select String Table in Content Browser → Right-click → "Translate Asset"
+
+### 6. Batch Translate Multiple Assets
+Ctrl + Click to select multiple assets in Content Browser → Right-click → "Translate Asset"
+
+### 7. Translate Sample Projects
+Can translate UE official sample assets to help understand examples
+
+### 8. Customize Shortcuts
 `Edit > Editor Preferences > Keyboard Shortcuts > Search LanguageOne`
+
+### 9. Smart Tool Window
+The Asset Translation Tool intelligently handles mixed selections and provides clear feedback
+
+### 10. View Translation Progress
+Batch translation displays beautiful progress window with real-time status
+
+### 11. Smart Mixed State Handling
+When selecting both translated and untranslated assets, clicking "Translate/Toggle":
+- Tool auto-classifies: untranslated → translate, translated → toggle display
+- Shows notification with operation details like "Mixed state: 2 toggled, 3 translated"
+
+### 12. Safe Use of Clear Original
+"Clear Original" button permanently deletes original markers:
+- ⚠️ **Dangerous Operation**: Irreversible, use with caution
+- Confirm translation quality before use
+- Suitable for final release cleanup to reduce file size
+- Double confirmation dialog appears on click
 
 ---
 
@@ -178,11 +283,55 @@ Select translated nodes → `Ctrl + T` → Restore
 - Configure Google API (best quality)
 - Keep original for reference
 
+**Q: Can't restore after asset translation?**
+- v1.4+ preserves original text by default (using zero-width markers)
+- Can restore anytime using "Restore" button in tool window
+- Only irreversible after using "Clear Original" function
+- Recommend version control for important assets
+
+**Q: Which assets support translation?**
+- String Table (string tables)
+- Data Table (text fields)
+- Widget Blueprint (UI widget text)
+- Blueprint (variable descriptions, comments)
+- Other asset description info
+
+**Q: Will original text show in-game after translation?**
+- No! Original text marked with zero-width characters, invisible to game
+- Can control display order with "Translation Above" setting
+- Can toggle display anytime with "Translate/Toggle" button
+- To completely remove original, use "Clear Original" function
+
+**Q: What does "Has Translation" mean in tool window?**
+- Indicates asset contains translation markers (both original and translation)
+- Different from "Success" (successfully processed in this operation)
+- "Has Translation" shows count for display mode toggle operations
+- Clearly distinguishes translation vs toggle operation results
+
+**Q: How are unsupported assets handled?**
+- Tool automatically filters out unsupported assets
+- Unsupported asset count displayed fixed in progress bar
+- Only supported assets processed, progress calculated from supported count
+- Unsupported types include: Texture, Material, Sound, and other non-text assets
+
 ---
 
 ## 📝 Version History
 
 ### v1.3 (Current)
+- ✨ Brand new Asset Translation Tool window with batch processing
+- ✨ Smart "Translate/Toggle" button auto-selects operation based on asset state
+- ✨ New "Restore" and "Clear Original" functions for flexible translation management
+- 🎨 Integrated progress bar with real-time result display
+- 🎨 Optimized interface layout with clearer information display
+- 🔧 Improved translation status detection with real-time updates
+- 🔧 Optimized mixed state handling (process translated and untranslated assets together)
+- 📝 Use zero-width characters to mark original text, more standardized format
+- 📝 Enhanced documentation with new usage tips
+
+### v1.3
+- 🔧 Fixed API issues
+- 🔧 Changed default API
 
 ### v1.2
 - Blueprint comment translation
