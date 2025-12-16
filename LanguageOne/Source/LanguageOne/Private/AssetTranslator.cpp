@@ -184,9 +184,6 @@ static void RefreshStringTableEditor(UStringTable* StringTable, const FString& K
 		return;
 	}
 
-	// 标记包为已修改
-	StringTable->MarkPackageDirty();
-	
 	// 触发 PostEditChange 通知
 	StringTable->PostEditChange();
 	
@@ -271,6 +268,9 @@ void FAssetTranslator::TranslateSelectedAssets(const TArray<FAssetData>& Selecte
 
 void FAssetTranslator::PerformTranslation(const TArray<FAssetData>& TranslatableAssets, bool bSilent)
 {
+	// 设置处理状态
+	FAssetTranslatorUI::SetProcessing(true);
+	
 	const ULanguageOneSettings* Settings = GetDefault<ULanguageOneSettings>();
 
 	// 显示进度窗口 (如果不是静默模式或批量翻译)
@@ -379,29 +379,6 @@ void FAssetTranslator::PerformTranslation(const TArray<FAssetData>& Translatable
 	if (State->ProgressWidget.IsValid())
 	{
 		State->ProgressWidget->MarkComplete(State->SuccessAssets, State->FailedAssets);
-	}
-	
-	// 自动保存
-	if (Settings->bAutoSaveTranslatedAssets && State->SuccessAssets > 0)
-	{
-		TArray<UPackage*> PackagesToSave;
-		for (const FAssetData& AssetData : TranslatableAssets)
-		{
-			// 简单起见，尝试保存所有传入的资产
-			// 理想情况下，我们应该只保存被修改的资产
-			// 但由于 FAssetData 可能已经失效（如果资产被完全重新加载），我们重新获取
-			UObject* Asset = AssetData.GetAsset();
-			if (Asset)
-			{
-				PackagesToSave.Add(Asset->GetOutermost());
-			}
-		}
-		
-		if (PackagesToSave.Num() > 0)
-		{
-			UEditorLoadingAndSavingUtils::SavePackages(PackagesToSave, false);
-			UE_LOG(LogTemp, Log, TEXT("Auto-saved %d translated assets"), PackagesToSave.Num());
-		}
 	}
 	
 	// 延迟关闭进度窗口
@@ -637,9 +614,6 @@ void FAssetTranslator::TranslateStringTableEntries(UObject* Asset, const TArray<
 		// 保存纯原文，用于后续的元数据存储
 		State->OriginalTexts.Add(Key, CleanSourceText);
 
-		// 保存原始文本
-		State->OriginalTexts.Add(Key, CleanSourceText);
-
 		// 如果是在编辑器中触发（静默模式），且已经有翻译内容，则认为是执行“还原”操作
 		// 还原逻辑：直接将提取出的原文设置回去
 		if (State->bSilent && HasTranslation(SourceText))
@@ -649,7 +623,6 @@ void FAssetTranslator::TranslateStringTableEntries(UObject* Asset, const TArray<
 			
 			// 修改 String Table（使用兼容性辅助函数）
 			State->StringTable->Modify();
-			State->StringTable->MarkPackageDirty();  // 标记为脏，确保自动保存生效
 			LanguageOneStringTableHelper::SetStringTableEntry(State->StringTable, Key, RestoredText);
 			
 			// 清除元数据中的原文（重要！确保还原后 HasAssetTranslation 返回 false）
@@ -711,7 +684,6 @@ void FAssetTranslator::TranslateStringTableEntries(UObject* Asset, const TArray<
 
 			// 修改 String Table（使用兼容性辅助函数）
 			State->StringTable->Modify();
-			State->StringTable->MarkPackageDirty();  // 标记为脏，确保自动保存生效
 			LanguageOneStringTableHelper::SetStringTableEntry(State->StringTable, Key, NewText);
 			
 			// 刷新 StringTable - 使用安全的刷新方法（不传 Key，避免改变选中项）
@@ -918,7 +890,6 @@ void FAssetTranslator::TranslateDataTable(UObject* Asset, bool bSilent)
 
 	if (TranslatedFieldCount > 0)
 	{
-		DataTable->MarkPackageDirty();
 		UE_LOG(LogTemp, Log, TEXT("DataTable translation complete: %s (%d fields translated)"), *DataTable->GetName(), TranslatedFieldCount);
 	}
 	else
@@ -1068,7 +1039,6 @@ void FAssetTranslator::TranslateWidgetBlueprint(UObject* Asset, bool bSilent)
 	if (TranslatedWidgetCount > 0)
 	{
 		Blueprint->Modify();
-		Blueprint->MarkPackageDirty();
 		FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
 		UE_LOG(LogTemp, Log, TEXT("Translated %d widgets in Widget Blueprint: %s"), TranslatedWidgetCount, *Blueprint->GetName());
 	}
@@ -1221,7 +1191,6 @@ void FAssetTranslator::TranslateBlueprint(UObject* Asset, bool bSilent)
 	if (TranslatedItemCount > 0)
 	{
 		Blueprint->Modify();
-		Blueprint->MarkPackageDirty();
 		FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
 		UE_LOG(LogTemp, Log, TEXT("Translated %d items in Blueprint: %s"), TranslatedItemCount, *Blueprint->GetName());
 	}
@@ -1267,7 +1236,6 @@ void FAssetTranslator::TranslateAssetMetadata(UObject* Asset, bool bSilent)
 			[Asset](const FString& TranslatedText)
 			{
 				Asset->Modify();
-				Asset->MarkPackageDirty();
 				// 设置元数据 (需要通过资产的元数据系统)
 				UE_LOG(LogTemp, Log, TEXT("Translated asset description: %s"), *Asset->GetName());
 			},
@@ -1446,6 +1414,9 @@ void FAssetTranslator::RestoreSelectedAssets(const TArray<FAssetData>& SelectedA
 
 void FAssetTranslator::PerformRestore(const TArray<FAssetData>& TranslatableAssets)
 {
+	// 设置处理状态
+	FAssetTranslatorUI::SetProcessing(true);
+	
 	// 使用工具窗口集成的进度组件
 	TSharedPtr<STranslationProgressWindow> ProgressWidget = FAssetTranslatorUI::GetToolWindowProgress();
 	
@@ -1549,26 +1520,8 @@ void FAssetTranslator::PerformRestore(const TArray<FAssetData>& TranslatableAsse
 		State->ProgressWidget->MarkComplete(State->SuccessAssets, State->FailedAssets);
 	}
 	
-	// 自动保存
-	const ULanguageOneSettings* Settings = GetDefault<ULanguageOneSettings>();
-	if (Settings->bAutoSaveTranslatedAssets && State->SuccessAssets > 0)
-	{
-		TArray<UPackage*> PackagesToSave;
-		for (const FAssetData& AssetData : TranslatableAssets)
-		{
-			UObject* Asset = AssetData.GetAsset();
-			if (Asset)
-			{
-				PackagesToSave.Add(Asset->GetOutermost());
-			}
-		}
-		
-		if (PackagesToSave.Num() > 0)
-		{
-			UEditorLoadingAndSavingUtils::SavePackages(PackagesToSave, false);
-			UE_LOG(LogTemp, Log, TEXT("Auto-saved %d restored assets"), PackagesToSave.Num());
-		}
-	}
+	// 恢复处理状态
+	FAssetTranslatorUI::SetProcessing(false);
 	
 	// 不再自动关闭窗口，让用户手动关闭
 	// if (State->ProgressWidget.IsValid())
@@ -1738,6 +1691,9 @@ void FAssetTranslator::ClearOriginalText(const TArray<FAssetData>& SelectedAsset
 
 void FAssetTranslator::PerformClearOriginal(const TArray<FAssetData>& TranslatableAssets)
 {
+	// 设置处理状态
+	FAssetTranslatorUI::SetProcessing(true);
+	
 	// 使用工具窗口集成的进度组件
 	TSharedPtr<STranslationProgressWindow> ProgressWidget = FAssetTranslatorUI::GetToolWindowProgress();
 	
@@ -1813,9 +1769,8 @@ void FAssetTranslator::PerformClearOriginal(const TArray<FAssetData>& Translatab
 				FStringTableConstRef StringTableData = StringTable->GetStringTable();
 				TArray<FString> Keys;
 				LanguageOneStringTableHelper::EnumerateStringTableKeys(StringTableData, Keys);
-
+				
 				StringTable->Modify();
-				StringTable->MarkPackageDirty();  // 标记为脏，确保自动保存生效
 				for (const FString& Key : Keys)
 				{
 					FString CurrentText = LanguageOneStringTableHelper::FindStringTableEntry(StringTableData, Key);
@@ -1890,26 +1845,8 @@ void FAssetTranslator::PerformClearOriginal(const TArray<FAssetData>& Translatab
 		State->ProgressWidget->MarkComplete(State->SuccessAssets, State->FailedAssets);
 	}
 	
-	// 自动保存
-	const ULanguageOneSettings* Settings = GetDefault<ULanguageOneSettings>();
-	if (Settings->bAutoSaveTranslatedAssets && State->SuccessAssets > 0)
-	{
-		TArray<UPackage*> PackagesToSave;
-		for (const FAssetData& AssetData : TranslatableAssets)
-		{
-			UObject* Asset = AssetData.GetAsset();
-			if (Asset)
-			{
-				PackagesToSave.Add(Asset->GetOutermost());
-			}
-		}
-		
-		if (PackagesToSave.Num() > 0)
-		{
-			UEditorLoadingAndSavingUtils::SavePackages(PackagesToSave, false);
-			UE_LOG(LogTemp, Log, TEXT("Auto-saved %d cleared assets"), PackagesToSave.Num());
-		}
-	}
+	// 恢复处理状态
+	FAssetTranslatorUI::SetProcessing(false);
 	
 	// 不再自动关闭窗口，让用户手动关闭
 	// if (State->ProgressWidget.IsValid())
@@ -1954,6 +1891,9 @@ void FAssetTranslator::ToggleDisplayMode(const TArray<FAssetData>& SelectedAsset
 
 void FAssetTranslator::PerformToggleDisplayMode(const TArray<FAssetData>& TranslatableAssets)
 {
+	// 设置处理状态
+	FAssetTranslatorUI::SetProcessing(true);
+	
 	// 使用工具窗口集成的进度组件
 	TSharedPtr<STranslationProgressWindow> ProgressWidget = FAssetTranslatorUI::GetToolWindowProgress();
 	
@@ -1990,7 +1930,6 @@ void FAssetTranslator::PerformToggleDisplayMode(const TArray<FAssetData>& Transl
 				LanguageOneStringTableHelper::EnumerateStringTableKeys(StringTableData, Keys);
 
 				StringTable->Modify();
-				StringTable->MarkPackageDirty();  // 标记为脏，确保自动保存生效
 				for (const FString& Key : Keys)
 				{
 					FString CurrentText = LanguageOneStringTableHelper::FindStringTableEntry(StringTableData, Key);
@@ -2059,5 +1998,8 @@ void FAssetTranslator::PerformToggleDisplayMode(const TArray<FAssetData>& Transl
 		ProgressWidget->MarkComplete(0, 0);  // 切换操作没有成功/失败，只有已翻译计数
 	}
 	
+	// 恢复处理状态
+	FAssetTranslatorUI::SetProcessing(false);
+
 	UE_LOG(LogTemp, Log, TEXT("Toggle display mode completed: %d assets"), TranslatableAssets.Num());
 }

@@ -108,10 +108,6 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = "翻译设置 | Translation Settings", meta = (DisplayName = "翻译前确认 | Confirm Before Translation", Tooltip = "批量翻译资产前显示确认对话框 | Show confirmation dialog before batch translation"))
 	bool bConfirmBeforeAssetTranslation;
 
-	/** 自动保存翻译后的资产 */
-	UPROPERTY(Config, EditAnywhere, Category = "翻译设置 | Translation Settings", meta = (DisplayName = "自动保存 | Auto Save", Tooltip = "翻译完成后自动保存资产 | Automatically save assets after translation"))
-	bool bAutoSaveTranslatedAssets;
-
 	/** 显示详细翻译日志 */
 	UPROPERTY(Config, EditAnywhere, Category = "翻译设置 | Translation Settings", meta = (DisplayName = "详细日志 | Verbose Logging", Tooltip = "在输出日志显示详细的翻译信息 | Show detailed translation info in output log"))
 	bool bVerboseAssetTranslationLog;

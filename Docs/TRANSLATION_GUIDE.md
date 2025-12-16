@@ -143,10 +143,13 @@ After completion, shows summary like:
 |--------|-------------|:-----------:|
 | Enable Asset Translation | Show translation option in context menu | ✅ |
 | Confirm Before Translation | Show confirmation dialog before batch translation | Personal preference |
-| Auto Save | Auto-save assets after translation | ❌ |
 | Verbose Logging | Show detailed translation logs | ✅ |
 
-**Note:** Since v1.4, asset translation preserves original text by default (using zero-width character markers), allowing display toggle or restoration anytime. To permanently delete original text, use the "Clear Original" button in the tool window.
+**Important Notes:**
+- Since v1.4, asset translation preserves original text by default (using zero-width character markers), allowing display toggle or restoration anytime
+- To permanently delete original text, use the "Clear Original" button in the tool window
+- **Manual save required (Ctrl+S)** after translation, plugin does not auto-save assets
+- Operations are locked during processing to prevent state corruption
 
 ### Translation Result Examples
 

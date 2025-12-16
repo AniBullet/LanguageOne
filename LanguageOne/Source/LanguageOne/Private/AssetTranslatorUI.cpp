@@ -24,6 +24,7 @@ TSharedPtr<SWindow> FAssetTranslatorUI::ProgressWindow = nullptr;
 TSharedPtr<STranslationProgressWindow> FAssetTranslatorUI::ProgressWidget = nullptr;
 TSharedPtr<SWindow> FAssetTranslatorUI::ToolWindow = nullptr;
 TSharedPtr<STranslationProgressWindow> FAssetTranslatorUI::ToolProgressWidget = nullptr;
+bool FAssetTranslatorUI::bIsProcessing = false;
 
 //////////////////////////////////////////////////////////////////////////
 // STranslationProgressWindow
@@ -783,6 +784,18 @@ void FAssetTranslatorUI::ShowInfoNotification(const FString& Message)
 	FSlateNotificationManager::Get().AddNotification(Info);
 }
 
+void FAssetTranslatorUI::ShowWarningNotification(const FString& Message)
+{
+	FNotificationInfo Info(FText::FromString(Message));
+	Info.ExpireDuration = 5.0f;
+	Info.bFireAndForget = true;
+	Info.bUseThrobber = false;
+	Info.bUseSuccessFailIcons = true;
+	// 设置为警告样式（橙黄色）
+	Info.Image = FCoreStyle::Get().GetBrush(TEXT("MessageLog.Warning"));
+	FSlateNotificationManager::Get().AddNotification(Info);
+}
+
 void FAssetTranslatorUI::ShowAssetTranslationTool(const TArray<FAssetData>& SelectedAssets)
 {
 	if (SelectedAssets.Num() == 0)
@@ -1101,6 +1114,13 @@ void FAssetTranslatorUI::ShowAssetTranslationTool(const TArray<FAssetData>& Sele
 					.ToolTipText(FText::FromString(TEXT("还原存在翻译的资产，移除翻译内容，恢复原文 | Restore assets with translation, remove translations, restore original text")))
 					.OnClicked_Lambda([SupportedAssets]() -> FReply
 					{
+						// 检查是否正在处理
+						if (FAssetTranslatorUI::IsProcessing())
+						{
+							FAssetTranslatorUI::ShowWarningNotification(TEXT("正在处理中，请等待当前操作完成 | Processing, please wait for current operation to complete"));
+							return FReply::Handled();
+						}
+						
 						// 重置进度组件（确保进度条被重置）
 						if (ToolProgressWidget.IsValid())
 						{
@@ -1177,4 +1197,15 @@ void FAssetTranslatorUI::ShowAssetTranslationTool(const TArray<FAssetData>& Sele
 TSharedPtr<STranslationProgressWindow> FAssetTranslatorUI::GetToolWindowProgress()
 {
 	return ToolProgressWidget;
+}
+
+bool FAssetTranslatorUI::IsProcessing()
+{
+	return bIsProcessing;
+}
+
+void FAssetTranslatorUI::SetProcessing(bool bInProcessing)
+{
+	bIsProcessing = bInProcessing;
+	UE_LOG(LogTemp, Log, TEXT("Asset translation processing state changed: %s"), bInProcessing ? TEXT("BUSY") : TEXT("IDLE"));
 }

@@ -117,15 +117,25 @@ public:
 	/** 显示信息通知 */
 	static void ShowInfoNotification(const FString& Message);
 	
+	/** 显示警告通知 */
+	static void ShowWarningNotification(const FString& Message);
+	
 	/** 显示资产翻译工具窗口（集成进度条） */
 	static void ShowAssetTranslationTool(const TArray<FAssetData>& SelectedAssets);
 	
 	/** 获取当前工具窗口的进度组件 */
 	static TSharedPtr<STranslationProgressWindow> GetToolWindowProgress();
+	
+	/** 检查是否正在处理资产翻译 */
+	static bool IsProcessing();
+	
+	/** 设置处理状态 */
+	static void SetProcessing(bool bInProcessing);
 
 private:
 	static TSharedPtr<SWindow> ProgressWindow;  // 独立进度窗口（已弃用）
 	static TSharedPtr<STranslationProgressWindow> ProgressWidget;  // 独立进度组件（已弃用）
 	static TSharedPtr<SWindow> ToolWindow;  // 工具窗口
 	static TSharedPtr<STranslationProgressWindow> ToolProgressWidget;  // 工具窗口内的进度组件
+	static bool bIsProcessing;  // 是否正在处理资产翻译
 };
