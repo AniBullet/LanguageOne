@@ -649,6 +649,7 @@ void FAssetTranslator::TranslateStringTableEntries(UObject* Asset, const TArray<
 			
 			// 修改 String Table（使用兼容性辅助函数）
 			State->StringTable->Modify();
+			State->StringTable->MarkPackageDirty();  // 标记为脏，确保自动保存生效
 			LanguageOneStringTableHelper::SetStringTableEntry(State->StringTable, Key, RestoredText);
 			
 			// 清除元数据中的原文（重要！确保还原后 HasAssetTranslation 返回 false）
@@ -708,12 +709,13 @@ void FAssetTranslator::TranslateStringTableEntries(UObject* Asset, const TArray<
 				// 同时将原文保存到元数据中（用于还原和清除操作）
 				LanguageOneStringTableHelper::SetStringTableEntryMetaData(State->StringTable, Key, OriginalTextMetaDataId, OriginalText);
 
-				// 修改 String Table（使用兼容性辅助函数）
-				State->StringTable->Modify();
-				LanguageOneStringTableHelper::SetStringTableEntry(State->StringTable, Key, NewText);
-				
-				// 刷新 StringTable - 使用安全的刷新方法（不传 Key，避免改变选中项）
-				RefreshStringTableEditor(State->StringTable);
+			// 修改 String Table（使用兼容性辅助函数）
+			State->StringTable->Modify();
+			State->StringTable->MarkPackageDirty();  // 标记为脏，确保自动保存生效
+			LanguageOneStringTableHelper::SetStringTableEntry(State->StringTable, Key, NewText);
+			
+			// 刷新 StringTable - 使用安全的刷新方法（不传 Key，避免改变选中项）
+			RefreshStringTableEditor(State->StringTable);
 				
 				State->CompletedCount++;
 				State->SuccessCount++;
@@ -914,7 +916,12 @@ void FAssetTranslator::TranslateDataTable(UObject* Asset, bool bSilent)
 		}
 	}
 
-	if (TranslatedFieldCount == 0)
+	if (TranslatedFieldCount > 0)
+	{
+		DataTable->MarkPackageDirty();
+		UE_LOG(LogTemp, Log, TEXT("DataTable translation complete: %s (%d fields translated)"), *DataTable->GetName(), TranslatedFieldCount);
+	}
+	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No translatable text fields found in DataTable: %s"), *DataTable->GetName());
 	}
@@ -1061,6 +1068,7 @@ void FAssetTranslator::TranslateWidgetBlueprint(UObject* Asset, bool bSilent)
 	if (TranslatedWidgetCount > 0)
 	{
 		Blueprint->Modify();
+		Blueprint->MarkPackageDirty();
 		FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
 		UE_LOG(LogTemp, Log, TEXT("Translated %d widgets in Widget Blueprint: %s"), TranslatedWidgetCount, *Blueprint->GetName());
 	}
@@ -1213,6 +1221,7 @@ void FAssetTranslator::TranslateBlueprint(UObject* Asset, bool bSilent)
 	if (TranslatedItemCount > 0)
 	{
 		Blueprint->Modify();
+		Blueprint->MarkPackageDirty();
 		FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
 		UE_LOG(LogTemp, Log, TEXT("Translated %d items in Blueprint: %s"), TranslatedItemCount, *Blueprint->GetName());
 	}
@@ -1258,6 +1267,7 @@ void FAssetTranslator::TranslateAssetMetadata(UObject* Asset, bool bSilent)
 			[Asset](const FString& TranslatedText)
 			{
 				Asset->Modify();
+				Asset->MarkPackageDirty();
 				// 设置元数据 (需要通过资产的元数据系统)
 				UE_LOG(LogTemp, Log, TEXT("Translated asset description: %s"), *Asset->GetName());
 			},
@@ -1794,7 +1804,7 @@ void FAssetTranslator::PerformClearOriginal(const TArray<FAssetData>& Translatab
 
 		// 根据资产类型调用相应的清除函数
 		FString ClassName = LanguageOneAssetDataHelper::GetAssetClassName(AssetData);
-		
+
 		if (ClassName.Contains(TEXT("StringTable")))
 		{
 			UStringTable* StringTable = Cast<UStringTable>(Asset);
@@ -1803,8 +1813,9 @@ void FAssetTranslator::PerformClearOriginal(const TArray<FAssetData>& Translatab
 				FStringTableConstRef StringTableData = StringTable->GetStringTable();
 				TArray<FString> Keys;
 				LanguageOneStringTableHelper::EnumerateStringTableKeys(StringTableData, Keys);
-				
+
 				StringTable->Modify();
+				StringTable->MarkPackageDirty();  // 标记为脏，确保自动保存生效
 				for (const FString& Key : Keys)
 				{
 					FString CurrentText = LanguageOneStringTableHelper::FindStringTableEntry(StringTableData, Key);
@@ -1977,8 +1988,9 @@ void FAssetTranslator::PerformToggleDisplayMode(const TArray<FAssetData>& Transl
 				FStringTableConstRef StringTableData = StringTable->GetStringTable();
 				TArray<FString> Keys;
 				LanguageOneStringTableHelper::EnumerateStringTableKeys(StringTableData, Keys);
-				
+
 				StringTable->Modify();
+				StringTable->MarkPackageDirty();  // 标记为脏，确保自动保存生效
 				for (const FString& Key : Keys)
 				{
 					FString CurrentText = LanguageOneStringTableHelper::FindStringTableEntry(StringTableData, Key);

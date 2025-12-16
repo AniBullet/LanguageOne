@@ -50,9 +50,13 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 
 <div align="center">
 
-| 插件 | 按钮 | 设置 |
+| 启用插件 | 翻译按钮 |
+|:---:|:---:|
+| <img src="Preview/1启用.png" width="400"/> | <img src="Preview/2按钮.png" width="400"/> |
+
+| 蓝图翻译 | 批量翻译 | 设置界面 |
 |:---:|:---:|:---:|
-| ![](Preview/0.png) | ![](Preview/1.png) | ![](Preview/2.png) |
+| <img src="Preview/3蓝图翻译.png" width="260"/> | <img src="Preview/4批量翻译.png" width="260"/> | <img src="Preview/5设置界面.png" width="260"/> |
 
 </div>
 

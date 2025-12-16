@@ -318,7 +318,7 @@ When selecting both translated and untranslated assets, clicking "Translate/Togg
 
 ## 📝 Version History
 
-### v1.3 (Current)
+### v1.4 (Current)
 - ✨ Brand new Asset Translation Tool window with batch processing
 - ✨ Smart "Translate/Toggle" button auto-selects operation based on asset state
 - ✨ New "Restore" and "Clear Original" functions for flexible translation management
