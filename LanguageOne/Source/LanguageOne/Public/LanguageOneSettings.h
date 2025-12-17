@@ -58,17 +58,17 @@ public:
 	ULanguageOneSettings();
 
 	// ========== 语言切换 ==========
-	/** 目标编辑器语言 */
-	UPROPERTY(Config, EditAnywhere, Category = "语言切换 | Language Switch", meta = (DisplayName = "目标语言 | Target Language", Tooltip = "按 Alt+Q 在当前语言和目标语言之间切换 | Press Alt+Q to toggle between current and target language"))
+	/** 语言 A (默认语言) */
+	UPROPERTY(Config, EditAnywhere, Category = "语言切换 | Language Switch", meta = (DisplayName = "语言 A | Language A", Tooltip = "双语切换的第一种语言（通常为英文） | First language for toggling (usually English)"))
+	EEditorLanguage SourceEditorLanguage;
+
+	/** 语言 B (目标语言) */
+	UPROPERTY(Config, EditAnywhere, Category = "语言切换 | Language Switch", meta = (DisplayName = "语言 B | Language B", Tooltip = "双语切换的第二种语言（通常为中文） | Second language for toggling (usually Chinese)"))
 	EEditorLanguage TargetEditorLanguage;
 
-	/** 当前编辑器语言 */
-	UPROPERTY(VisibleAnywhere, Category = "语言切换 | Language Switch", meta = (DisplayName = "当前语言 | Current Language"))
+	/** 当前编辑器语言（只读显示） */
+	UPROPERTY(VisibleAnywhere, Category = "语言切换 | Language Switch", meta = (DisplayName = "当前编辑器语言 | Current Editor Language"))
 	FString CurrentEditorLanguage;
-
-	/** 上一次的语言（用于来回切换） */
-	UPROPERTY(Config)
-	FString PreviousLanguage;
 
 	// ========== 翻译设置 ==========
 	/** 翻译服务 */

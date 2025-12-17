@@ -10,8 +10,6 @@ $PluginSourceDir = "LanguageOne"
 
 # Supported engine versions
 $EngineVersions = @(
-    @{ Version = "4.26"; VersionString = "4.26.0" },
-    @{ Version = "4.27"; VersionString = "4.27.0" },
     @{ Version = "5.0"; VersionString = "5.0.0" },
     @{ Version = "5.1"; VersionString = "5.1.0" },
     @{ Version = "5.2"; VersionString = "5.2.0" },

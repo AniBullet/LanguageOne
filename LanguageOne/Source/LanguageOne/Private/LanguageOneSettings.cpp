@@ -1,11 +1,19 @@
+/*
+ * @Description: 
+ * @Author: Bullet.S
+ * @Date: 2025-12-12 16:28:22
+ * @LastEditors: Bullet.S
+ * @LastEditTime: 2025-12-17 11:59:15
+ * @Email: animator.bullet@foxmail.com
+ */
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "LanguageOneSettings.h"
 
 ULanguageOneSettings::ULanguageOneSettings()
-	: TargetEditorLanguage(EEditorLanguage::English)  // 默认目标：英文
+	: SourceEditorLanguage(EEditorLanguage::English) // 默认语言A：英文
+	, TargetEditorLanguage(EEditorLanguage::ChineseSimplified) // 默认语言B：中文
 	, CurrentEditorLanguage(TEXT(""))
-	, PreviousLanguage(TEXT("zh-CN"))  // 默认上一次：中文
 	, TranslateProvider(ETranslateProvider::MicrosoftFree)  // 默认使用微软Edge翻译（免费且稳定）
 	, BaiduAppId(TEXT(""))
 	, BaiduSecretKey(TEXT(""))

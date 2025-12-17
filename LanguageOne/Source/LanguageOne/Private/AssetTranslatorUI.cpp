@@ -37,7 +37,8 @@ void STranslationProgressWindow::Construct(const FArguments& InArgs, int32 InTot
 	SuccessItems = 0;
 	FailedItems = 0;
 	UnsupportedItems = 0;
-	TranslatedItems = 0;
+	// TranslatedItems = 0; // Removed
+	OperationName = TEXT("处理"); // 默认操作名称
 	bIsComplete = false;
 	bIsFailed = false;
 
@@ -148,38 +149,6 @@ void STranslationProgressWindow::Construct(const FArguments& InArgs, int32 InTot
 							.Text(this, &STranslationProgressWindow::GetSuccessCountText)
 							.Font(FAppStyle::GetFontStyle("HeadingLarge"))
 							.ColorAndOpacity(FLinearColor(0.2f, 0.8f, 0.4f, 1.0f))
-							.Justification(ETextJustify::Center)
-						]
-					]
-				]
-				
-				// 存在翻译数量（切换显示）
-				+ SHorizontalBox::Slot()
-				.FillWidth(1.0f)
-				.Padding(3, 0, 3, 0)
-				[
-					SNew(SBorder)
-					.BorderImage(FAppStyle::GetBrush("DetailsView.CategoryTop"))
-					.Padding(FMargin(8.0f, 6.0f))
-					[
-						SNew(SVerticalBox)
-						+ SVerticalBox::Slot()
-						.AutoHeight()
-						[
-							SNew(STextBlock)
-							.Text(FText::FromString(TEXT("🔄 存在翻译")))
-							.Font(FAppStyle::GetFontStyle("SmallText"))
-							.ColorAndOpacity(FLinearColor(0.6f, 0.6f, 0.6f, 1.0f))
-							.Justification(ETextJustify::Center)
-						]
-						+ SVerticalBox::Slot()
-						.AutoHeight()
-						.Padding(0, 3, 0, 0)
-						[
-							SNew(STextBlock)
-							.Text(this, &STranslationProgressWindow::GetTranslatedCountText)
-							.Font(FAppStyle::GetFontStyle("HeadingLarge"))
-							.ColorAndOpacity(FLinearColor(0.3f, 0.7f, 0.9f, 1.0f))
 							.Justification(ETextJustify::Center)
 						]
 					]
@@ -311,7 +280,6 @@ void STranslationProgressWindow::Reset(int32 InTotalItems)
 	FailedItems = 0;
 	// 重要：不重置 UnsupportedItems，因为不支持的资产数量是固定的
 	// UnsupportedItems = 0;  // 注释掉，保持原值
-	TranslatedItems = 0;
 	CurrentItemName.Empty();
 	bIsComplete = false;
 	bIsFailed = false;
@@ -328,14 +296,14 @@ void STranslationProgressWindow::IncrementFailed()
 	FailedItems++;
 }
 
-void STranslationProgressWindow::IncrementTranslated()
-{
-	TranslatedItems++;
-}
-
 void STranslationProgressWindow::SetUnsupportedCount(int32 Count)
 {
 	UnsupportedItems = Count;
+}
+
+void STranslationProgressWindow::SetOperationName(const FString& Name)
+{
+	OperationName = Name;
 }
 
 TOptional<float> STranslationProgressWindow::GetProgressPercent() const
@@ -385,29 +353,24 @@ FText STranslationProgressWindow::GetUnsupportedCountText() const
 	return FText::FromString(FString::Printf(TEXT("%d"), UnsupportedItems));
 }
 
-FText STranslationProgressWindow::GetTranslatedCountText() const
-{
-	return FText::FromString(FString::Printf(TEXT("%d"), TranslatedItems));
-}
-
 FText STranslationProgressWindow::GetProgressText() const
 {
 	if (bIsComplete)
 	{
 		return FText::FromString(FString::Printf(
-			TEXT("✓ 翻译完成 | Completed: %d/%d 项 | %d/%d items"),
-			CurrentItems, TotalItems, CurrentItems, TotalItems
+			TEXT("✓ %s完成 | Completed: %d/%d 项 | %d/%d items"),
+			*OperationName, CurrentItems, TotalItems, CurrentItems, TotalItems
 		));
 	}
 	else if (bIsFailed)
 	{
-		return FText::FromString(TEXT("✗ 翻译失败 | Translation Failed"));
+		return FText::FromString(FString::Printf(TEXT("✗ %s失败 | Operation Failed"), *OperationName));
 	}
 	else
 	{
 		return FText::FromString(FString::Printf(
-			TEXT("⏳ 正在翻译 | Translating: %d/%d"),
-			CurrentItems, TotalItems
+			TEXT("⏳ 正在%s | Processing: %d/%d"),
+			*OperationName, CurrentItems, TotalItems
 		));
 	}
 }
@@ -417,14 +380,7 @@ FText STranslationProgressWindow::GetStatusText() const
 	if (bIsComplete)
 	{
 		// 根据不同的操作类型显示不同的完成信息
-		if (TranslatedItems > 0)
-		{
-			// 切换显示操作
-			return FText::FromString(FString::Printf(
-				TEXT("✓ 已切换 %d 个资产的显示模式 | Toggled display mode for %d assets"),
-				TranslatedItems, TranslatedItems));
-		}
-		else if (SuccessItems > 0 && FailedItems > 0)
+		if (SuccessItems > 0 && FailedItems > 0)
 		{
 			// 部分成功
 			return FText::FromString(FString::Printf(
@@ -798,6 +754,9 @@ void FAssetTranslatorUI::ShowWarningNotification(const FString& Message)
 
 void FAssetTranslatorUI::ShowAssetTranslationTool(const TArray<FAssetData>& SelectedAssets)
 {
+	// 强制重置处理状态，防止之前的操作异常退出导致状态卡死
+	bIsProcessing = false;
+
 	if (SelectedAssets.Num() == 0)
 	{
 		ShowInfoNotification(TEXT("请先选择要操作的资产 | Please select assets first"));
@@ -881,7 +840,7 @@ void FAssetTranslatorUI::ShowAssetTranslationTool(const TArray<FAssetData>& Sele
 			.Padding(0, 0, 12, 0)
 			[
 				SNew(SImage)
-				.Image(FAppStyle::GetBrush("Icons.Transform"))
+				.Image(LANGUAGEONE_EDITOR_STYLE::GetBrush("Icons.Transform"))
 				.DesiredSizeOverride(FVector2D(32, 32))
 			]
 			+ SHorizontalBox::Slot()
@@ -890,7 +849,7 @@ void FAssetTranslatorUI::ShowAssetTranslationTool(const TArray<FAssetData>& Sele
 			[
 				SNew(STextBlock)
 				.Text(FText::FromString(TEXT("🌐 资产翻译工具 | Asset Translation Tool")))
-				.Font(FAppStyle::GetFontStyle("HeadingLarge"))
+							.Font(FAppStyle::GetFontStyle("HeadingLarge"))
 				.Justification(ETextJustify::Left)
 			]
 		]
@@ -952,7 +911,7 @@ void FAssetTranslatorUI::ShowAssetTranslationTool(const TArray<FAssetData>& Sele
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString(TEXT("💡 提示：点击按钮执行操作，进度条将显示处理结果")))
-					.Font(FAppStyle::GetFontStyle("SmallText"))
+					.Font(LANGUAGEONE_EDITOR_STYLE::GetFontStyle("SmallText"))
 					.ColorAndOpacity(FLinearColor(0.7f, 0.7f, 0.7f, 1.0f))
 					.Justification(ETextJustify::Center)
 					.AutoWrapText(true)
@@ -1002,101 +961,32 @@ void FAssetTranslatorUI::ShowAssetTranslationTool(const TArray<FAssetData>& Sele
 				.Padding(0, 0, 8, 0)
 				[
 					SNew(SButton)
-					.Text(FText::FromString(TEXT("✨ 翻译/切换 | Translate/Toggle")))
+					.Text(FText::FromString(TEXT("✨ 翻译 | Translate")))
 					.HAlign(HAlign_Center)
 					.ContentPadding(FMargin(32, 10))
 					.ButtonStyle(FAppStyle::Get(), "PrimaryButton")
-					.ToolTipText(FText::FromString(TEXT("翻译资产或在双语/原文之间切换 | Translate assets or toggle between bilingual/original")))
+					.ToolTipText(FText::FromString(TEXT("翻译所有选中的资产（自动跳过已翻译部分） | Translate all selected assets (skip already translated parts)")))
 					.OnClicked_Lambda([SupportedAssets]() -> FReply
 					{
-						// 每次点击都重新检测翻译状态（不使用缓存）
-						int32 TranslatedCount = 0;
-						int32 UntranslatedCount = 0;
-						
-						for (const FAssetData& AssetData : SupportedAssets)
+						// 检查是否正在处理
+						if (FAssetTranslatorUI::IsProcessing())
 						{
-							// 重要：每次都重新加载资产对象，确保获取最新状态
-							// 使用 GetAsset() 会强制从磁盘/内存重新加载
-							UObject* Asset = AssetData.GetAsset();
-							if (Asset)
-							{
-								// 重新检查当前资产的翻译状态
-								bool bHasTranslation = FAssetTranslator::HasAssetTranslation(AssetData);
-								
-								if (bHasTranslation)
-								{
-									TranslatedCount++;
-								}
-								else
-								{
-									UntranslatedCount++;
-								}
-								
-								UE_LOG(LogTemp, VeryVerbose, TEXT("Asset translation check: %s = %s"), 
-									*AssetData.AssetName.ToString(), bHasTranslation ? TEXT("Translated") : TEXT("Untranslated"));
-							}
+							FAssetTranslatorUI::ShowWarningNotification(TEXT("正在处理中，请等待当前操作完成 | Processing, please wait for current operation to complete"));
+							return FReply::Handled();
 						}
-						
-						UE_LOG(LogTemp, Log, TEXT("Translation status check: %d translated, %d untranslated"), 
-							TranslatedCount, UntranslatedCount);
-						
+
 						// 重置进度组件
 						if (ToolProgressWidget.IsValid())
 						{
 							ToolProgressWidget->Reset(SupportedAssets.Num());
 						}
 						
-						// 根据状态决定操作并提供反馈
-						if (TranslatedCount == SupportedAssets.Num())
-						{
-							// 全部存在翻译，切换显示模式
-							FAssetTranslatorUI::ShowInfoNotification(
-								FString::Printf(TEXT("所有资产存在翻译，切换显示模式 | All %d assets have translation, toggling display mode"), TranslatedCount));
-							FAssetTranslator::ToggleDisplayMode(SupportedAssets);
-						}
-						else if (UntranslatedCount == SupportedAssets.Num())
-						{
-							// 全部未翻译，执行翻译
-							FAssetTranslatorUI::ShowInfoNotification(
-								FString::Printf(TEXT("开始翻译 %d 个资产 | Starting translation for %d assets"), UntranslatedCount, UntranslatedCount));
-							FAssetTranslator::PerformTranslation(SupportedAssets, false);
-						}
-						else
-						{
-							// 混合状态：部分存在翻译，部分未翻译
-							FAssetTranslatorUI::ShowInfoNotification(
-								FString::Printf(TEXT("混合状态：%d 个存在翻译将切换显示，%d 个未翻译将进行翻译 | Mixed: %d with translation (toggle), %d untranslated (translate)"), 
-								TranslatedCount, UntranslatedCount, TranslatedCount, UntranslatedCount));
-							
-							// 分别处理：存在翻译的切换，未翻译的翻译
-							TArray<FAssetData> ToToggle;
-							TArray<FAssetData> ToTranslate;
-							for (const FAssetData& AssetData : SupportedAssets)
-							{
-								// 重新加载资产并检查当前状态（确保使用最新数据）
-								UObject* Asset = AssetData.GetAsset();
-								if (Asset && FAssetTranslator::HasAssetTranslation(AssetData))
-								{
-									ToToggle.Add(AssetData);
-								}
-								else if (Asset)
-								{
-									ToTranslate.Add(AssetData);
-								}
-							}
-							
-							// 先切换存在翻译的
-							if (ToToggle.Num() > 0)
-							{
-								FAssetTranslator::ToggleDisplayMode(ToToggle);
-							}
-							
-							// 再翻译未翻译的
-							if (ToTranslate.Num() > 0)
-							{
-								FAssetTranslator::PerformTranslation(ToTranslate, false);
-							}
-						}
+						// 直接执行翻译（补全）操作
+						// 内部逻辑已优化：会对已翻译部分进行格式检查/跳过，只翻译未翻译部分
+						FAssetTranslatorUI::ShowInfoNotification(
+							FString::Printf(TEXT("开始翻译 %d 个资产 | Starting translation for %d assets"), SupportedAssets.Num(), SupportedAssets.Num()));
+						
+						FAssetTranslator::PerformTranslation(SupportedAssets, false);
 						
 						return FReply::Handled();
 					})

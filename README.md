@@ -7,7 +7,7 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 
 [![Version](https://img.shields.io/github/v/release/AniBullet/LanguageOne?style=flat-square&color=brightgreen)](https://github.com/AniBullet/LanguageOne/releases)
 [![Fab](https://img.shields.io/badge/Fab-下载-blue?style=flat-square)](https://fab.com/s/dc840febb323)
-[![UE](https://img.shields.io/badge/UE-4.26~5.7+-orange?style=flat-square)](https://www.unrealengine.com/)
+[![UE](https://img.shields.io/badge/UE-5.0+-orange?style=flat-square)](https://www.unrealengine.com/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 
 **[中文](#-中文说明) · [English](#-english)**
@@ -40,11 +40,17 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 **安装：** [Fab 下载](https://fab.com/s/dc840febb323) 或 [GitHub Releases](https://github.com/AniBullet/LanguageOne/releases)
 
 **使用：**
-- `Alt + Q` - 切换语言
-- `Ctrl + T` - 翻译蓝图节点注释（选中=部分，未选=全图，再按=还原）
+- `Alt + Q` - 在 **语言A** 和 **语言B** 之间来回切换（在设置中配置）
+- `Ctrl + T` - 翻译/还原蓝图节点注释（选中=部分，未选=全图）
 - 右键资产 - 批量翻译资产（String Table、Data Table、Widget、Blueprint 等）
+  - **翻译**：智能批量翻译，自动补全未翻译部分，跳过已翻译部分
+  - **还原**：清除翻译内容，恢复到原文状态
+  - **清除原文**：只保留译文（慎用）
 
 **设置：** `编辑 > 编辑器偏好设置 > 插件 > LanguageOne`
+- 语言A (Source)：默认语言（如英文）
+- 语言B (Target)：目标语言（如中文）
+- 译文位置：译文在上方/下方
 
 ### 📸 预览
 
@@ -67,10 +73,11 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 ### 📝 更新日志
 
 **最新版本 v1.4:**
-- ✨ 全新资产翻译工具窗口，智能批量处理
-- 🔄 智能翻译/切换/还原/清除功能
-- 📊 实时进度显示，操作结果一目了然
-- 🎨 优化界面交互，使用体验更流畅
+- ✨ **智能资产翻译**：右键工具窗口简化为“翻译”（批量/补全）和“还原”，逻辑更清晰。
+- 🔄 **明确的双语切换**：设置改为“语言A”和“语言B”，Alt+Q 切换逻辑更直观。
+- 🛠️ **全版本支持**：完善对 UE 5.0 - 5.7+ 的兼容性支持（因维护困难，v1.4 起不再支持 4.x，请使用旧版本）。
+- ⚡ **性能优化**：智能检测已翻译内容，避免重复调用翻译 API，大幅提升补全速度。
+- 🎨 **界面优化**：简化工具窗口布局，移除冗余的状态显示。
 
 查看完整更新记录：[GitHub Releases](https://github.com/AniBullet/LanguageOne/releases)
 
@@ -95,11 +102,17 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 **Install:** [Download from Fab](https://fab.com/s/dc840febb323) or [GitHub Releases](https://github.com/AniBullet/LanguageOne/releases)
 
 **Usage:**
-- `Alt + Q` - Switch language
-- `Ctrl + T` - Translate blueprint node comments (selected=partial, none=all, press again=restore)
+- `Alt + Q` - Toggle between **Language A** and **Language B** (Configured in settings)
+- `Ctrl + T` - Translate/Restore blueprint node comments (selected=partial, none=all)
 - Right-click assets - Batch translate assets (String Table, Data Table, Widget, Blueprint, etc.)
+  - **Translate**: Smart batch translation, auto-completes untranslated parts
+  - **Restore**: Removes translations, restores original text
+  - **Clear Original**: Keeps translation only (Use with caution)
 
 **Settings:** `Edit > Editor Preferences > Plugins > LanguageOne`
+- Language A (Source): Default language (e.g. English)
+- Language B (Target): Target language (e.g. Chinese)
+- Position: Translation Above/Below
 
 ### 📖 Documentation
 
@@ -108,10 +121,11 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 ### 📝 Changelog
 
 **Latest v1.4:**
-- ✨ Brand new Asset Translation Tool with smart batch processing
-- 🔄 Smart Translate/Toggle/Restore/Clear functions
-- 📊 Real-time progress display for clear operation results
-- 🎨 Optimized UI interaction for smoother experience
+- ✨ **Smart Asset Translation**: Context menu tool now focuses on "Translate" (Batch/Complete) and "Restore".
+- 🔄 **Explicit Language Toggle**: Settings now use "Language A" and "Language B" for clearer toggling (Alt+Q).
+- 🛠️ **Full UE Support**: Improved compatibility for UE 5.0 - 5.7+ (Dropped 4.x support in v1.4 due to maintenance costs).
+- ⚡ **Optimized Performance**: Smarter translation logic avoids re-translating existing content.
+- 🎨 **UI Improvements**: Simplified tool window and cleaner progress display.
 
 See full history: [GitHub Releases](https://github.com/AniBullet/LanguageOne/releases)
 

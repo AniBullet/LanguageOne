@@ -116,8 +116,20 @@ static FString StripExistingTranslation(const FString& Text)
 			}
 			else
 			{
-				// 没有标记，默认左边是原文（兼容旧格式）
-				OriginalText = Left.TrimStartAndEnd();
+				// 没有标记，根据设置判断
+				const ULanguageOneSettings* Settings = GetDefault<ULanguageOneSettings>();
+				if (Settings->bTranslationAboveOriginal)
+				{
+					// 译文在上方：译文\n---\n原文
+					// 原文在右边
+					OriginalText = Right.TrimStartAndEnd();
+				}
+				else
+				{
+					// 译文在下方（默认）：原文\n---\n译文
+					// 原文在左边
+					OriginalText = Left.TrimStartAndEnd();
+				}
 			}
 			
 			if (!OriginalText.IsEmpty())
@@ -278,6 +290,10 @@ void FAssetTranslator::PerformTranslation(const TArray<FAssetData>& Translatable
 	if (!bSilent || TranslatableAssets.Num() > 1)
 	{
 		ProgressWidget = FAssetTranslatorUI::GetToolWindowProgress();
+		if (ProgressWidget.IsValid())
+		{
+			ProgressWidget->SetOperationName(TEXT("翻译"));
+		}
 	}
 	
 	// 创建翻译状态追踪
@@ -390,6 +406,9 @@ void FAssetTranslator::PerformTranslation(const TArray<FAssetData>& Translatable
 			FAssetTranslatorUI::CloseTranslationProgress();
 		}, 3.0f, false);
 	}
+
+	// 恢复处理状态 (修复：之前版本漏掉了这一行，导致翻译后状态卡死)
+	FAssetTranslatorUI::SetProcessing(false);
 	
 	// 静默模式下只在日志输出，不显示弹窗
 	if (bSilent)
@@ -962,7 +981,7 @@ void FAssetTranslator::TranslateWidgetBlueprint(UObject* Asset, bool bSilent)
 		// Editable Text
 		else if (UEditableText* EditableText = Cast<UEditableText>(Widget))
 		{
-			FText HintText = EditableText->GetHintText();
+			FText HintText = LanguageOneUMGHelper::GetEditableTextHintText(EditableText);
 			if (!HintText.IsEmpty())
 			{
 				if (bSilent && HasTranslation(HintText.ToString()))
@@ -987,7 +1006,7 @@ void FAssetTranslator::TranslateWidgetBlueprint(UObject* Asset, bool bSilent)
 		// Editable Text Box
 		else if (UEditableTextBox* EditableTextBox = Cast<UEditableTextBox>(Widget))
 		{
-			FText HintText = EditableTextBox->GetHintText();
+			FText HintText = LanguageOneUMGHelper::GetEditableTextBoxHintText(EditableTextBox);
 			if (!HintText.IsEmpty())
 			{
 				if (bSilent && HasTranslation(HintText.ToString()))
@@ -1161,9 +1180,9 @@ void FAssetTranslator::TranslateBlueprint(UObject* Asset, bool bSilent)
 						FString CleanText = StripExistingTranslation(TooltipStr);
 						FunctionEntry->Modify();
 						// 函数的Tooltip存储在MetaData中
-						if (FunctionEntry->MetaData.HasMetaData(FBlueprintMetadata::MD_Tooltip))
+						if (LanguageOneBlueprintMetadataHelper::HasMetaData(FunctionEntry->MetaData, FBlueprintMetadata::MD_Tooltip))
 						{
-							FunctionEntry->MetaData.SetMetaData(FBlueprintMetadata::MD_Tooltip, CleanText);
+							LanguageOneBlueprintMetadataHelper::SetMetaData(FunctionEntry->MetaData, FBlueprintMetadata::MD_Tooltip, CleanText);
 						}
 						TranslatedItemCount++;
 						continue;
@@ -1175,9 +1194,9 @@ void FAssetTranslator::TranslateBlueprint(UObject* Asset, bool bSilent)
 						{
 							FunctionEntry->Modify();
 							// 函数的Tooltip存储在MetaData中
-							if (FunctionEntry->MetaData.HasMetaData(FBlueprintMetadata::MD_Tooltip))
+							if (LanguageOneBlueprintMetadataHelper::HasMetaData(FunctionEntry->MetaData, FBlueprintMetadata::MD_Tooltip))
 							{
-								FunctionEntry->MetaData.SetMetaData(FBlueprintMetadata::MD_Tooltip, TranslatedText);
+								LanguageOneBlueprintMetadataHelper::SetMetaData(FunctionEntry->MetaData, FBlueprintMetadata::MD_Tooltip, TranslatedText);
 							}
 							TranslatedItemCount++;
 						},
@@ -1215,7 +1234,7 @@ void FAssetTranslator::TranslateAssetMetadata(UObject* Asset, bool bSilent)
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
 	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
 
-	FAssetData AssetData = AssetRegistry.GetAssetByObjectPath(FSoftObjectPath(Asset));
+	FAssetData AssetData = LanguageOneAssetDataHelper::GetAssetByObjectPath(AssetRegistry, FSoftObjectPath(Asset));
 	
 	// 翻译资产描述
 	FString Description;
@@ -1419,6 +1438,10 @@ void FAssetTranslator::PerformRestore(const TArray<FAssetData>& TranslatableAsse
 	
 	// 使用工具窗口集成的进度组件
 	TSharedPtr<STranslationProgressWindow> ProgressWidget = FAssetTranslatorUI::GetToolWindowProgress();
+	if (ProgressWidget.IsValid())
+	{
+		ProgressWidget->SetOperationName(TEXT("还原"));
+	}
 	
 	// 创建还原状态追踪
 	struct FRestoreState
@@ -1611,8 +1634,20 @@ static FString ExtractTranslationOnly(const FString& Text)
 		FString Left, Right;
 		if (Text.Split(Separator, &Left, &Right))
 		{
-			// 假设右边是译文（新格式）
-			return Right.TrimStartAndEnd();
+			// 没有标记，根据设置判断
+			const ULanguageOneSettings* Settings = GetDefault<ULanguageOneSettings>();
+			if (Settings->bTranslationAboveOriginal)
+			{
+				// 译文在上方：译文\n---\n原文
+				// 译文在左边
+				return Left.TrimStartAndEnd();
+			}
+			else
+			{
+				// 译文在下方（默认）：原文\n---\n译文
+				// 译文在右边
+				return Right.TrimStartAndEnd();
+			}
 		}
 	}
 	
@@ -1696,6 +1731,10 @@ void FAssetTranslator::PerformClearOriginal(const TArray<FAssetData>& Translatab
 	
 	// 使用工具窗口集成的进度组件
 	TSharedPtr<STranslationProgressWindow> ProgressWidget = FAssetTranslatorUI::GetToolWindowProgress();
+	if (ProgressWidget.IsValid())
+	{
+		ProgressWidget->SetOperationName(TEXT("清除"));
+	}
 	
 	// 创建清除状态追踪
 	struct FClearState
@@ -1988,7 +2027,7 @@ void FAssetTranslator::PerformToggleDisplayMode(const TArray<FAssetData>& Transl
 		// 标记为已翻译切换
 		if (ProgressWidget.IsValid())
 		{
-			ProgressWidget->IncrementTranslated();
+			// ProgressWidget->IncrementTranslated();
 		}
 	}
 	

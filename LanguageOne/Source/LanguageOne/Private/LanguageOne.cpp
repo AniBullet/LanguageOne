@@ -156,29 +156,8 @@ void FLanguageOneModule::StartupModule()
 		FString CurrentCulture = FInternationalization::Get().GetCurrentCulture()->GetName();
 		Settings->CurrentEditorLanguage = CurrentCulture;
 		
-		// 如果是首次使用（PreviousLanguage为空），根据当前语言智能初始化
-		if (Settings->PreviousLanguage.IsEmpty())
-		{
-			if (CurrentCulture.StartsWith(TEXT("zh")))
-			{
-				// 当前中文 → 目标英文，上一次记为中文
-				Settings->TargetEditorLanguage = EEditorLanguage::English;
-				Settings->PreviousLanguage = CurrentCulture;
-			}
-			else
-			{
-				// 当前其他语言 → 目标中文，上一次记为当前
-				Settings->TargetEditorLanguage = EEditorLanguage::ChineseSimplified;
-				Settings->PreviousLanguage = CurrentCulture;
-			}
-			UE_LOG(LogTemp, Log, TEXT("First time setup: Current=%s, Target=%s, Previous=%s"), 
-				*CurrentCulture, *GetLanguageCode(Settings->TargetEditorLanguage), *Settings->PreviousLanguage);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Log, TEXT("Current=%s, Target=%s, Previous=%s"), 
-				*CurrentCulture, *GetLanguageCode(Settings->TargetEditorLanguage), *Settings->PreviousLanguage);
-		}
+		UE_LOG(LogTemp, Log, TEXT("Current=%s, LanguageA=%s, LanguageB=%s"), 
+			*CurrentCulture, *GetLanguageCode(Settings->SourceEditorLanguage), *GetLanguageCode(Settings->TargetEditorLanguage));
 	}
 }
 
@@ -470,39 +449,47 @@ void FLanguageOneModule::SwitchLanguage()
 	}
 
 	FString CurrentCulture = FInternationalization::Get().GetCurrentCulture()->GetName();
-	FString TargetCulture = GetLanguageCode(Settings->TargetEditorLanguage);
+	FString LanguageACode = GetLanguageCode(Settings->SourceEditorLanguage);
+	FString LanguageBCode = GetLanguageCode(Settings->TargetEditorLanguage);
 	FString NewCulture;
 
-	// 检查是否两个切换语言相同
-	if (CurrentCulture == TargetCulture)
+	// 检查 A 和 B 是否相同
+	if (LanguageACode == LanguageBCode)
 	{
-		FString PreviousCulture = Settings->PreviousLanguage.IsEmpty() ? TEXT("zh-CN") : Settings->PreviousLanguage;
-		
-		// 如果当前、目标、上一次都是同一个语言，提醒用户
-		if (CurrentCulture.StartsWith(PreviousCulture.Left(2)) || PreviousCulture.StartsWith(CurrentCulture.Left(2)))
-		{
-			FNotificationInfo Info(FText::FromString(
-				FString::Printf(TEXT("⚠️ 当前语言和目标语言相同！\nCurrent and target languages are the same!\n\n请到 编辑器偏好设置 > 插件 > LanguageOne 修改目标语言\nPlease change target language in:\nEdit > Editor Preferences > Plugins > LanguageOne"))
-			));
-			Info.ExpireDuration = 8.0f;
-			Info.bUseThrobber = false;
-			Info.bUseSuccessFailIcons = true;
-			FSlateNotificationManager::Get().AddNotification(Info);
-			
-			UE_LOG(LogTemp, Warning, TEXT("Language switch skipped: Current (%s) and Target (%s) are the same!"), *CurrentCulture, *TargetCulture);
-			return;
-		}
-		
-		// 当前已经是目标语言，切换到上一次的语言
-		NewCulture = PreviousCulture;
-		UE_LOG(LogTemp, Log, TEXT("Switch back from %s to previous language %s"), *CurrentCulture, *NewCulture);
+		FNotificationInfo Info(FText::FromString(
+			FString::Printf(TEXT("⚠️ 语言A和语言B相同！\nLanguage A and B are the same!\n\n请在设置中修改\nPlease change in settings"))
+		));
+		Info.ExpireDuration = 5.0f;
+		Info.bUseSuccessFailIcons = true;
+		FSlateNotificationManager::Get().AddNotification(Info);
+		return;
+	}
+
+	// 简单的 A/B 切换逻辑
+	// 1. 如果当前是 A (或 A 的变体)，切换到 B
+	// 2. 如果当前是 B (或 B 的变体)，切换到 A
+	// 3. 既不是 A 也不是 B，切换到 A（默认行为）
+
+	bool bIsA = CurrentCulture.StartsWith(LanguageACode);
+	bool bIsB = CurrentCulture.StartsWith(LanguageBCode);
+
+	if (bIsA)
+	{
+		// 当前是 A -> 切换到 B
+		NewCulture = LanguageBCode;
+		UE_LOG(LogTemp, Log, TEXT("Switching from Language A (%s) to Language B (%s)"), *CurrentCulture, *NewCulture);
+	}
+	else if (bIsB)
+	{
+		// 当前是 B -> 切换到 A
+		NewCulture = LanguageACode;
+		UE_LOG(LogTemp, Log, TEXT("Switching from Language B (%s) to Language A (%s)"), *CurrentCulture, *NewCulture);
 	}
 	else
 	{
-		// 当前不是目标语言，切换到目标语言，并保存当前语言
-		Settings->PreviousLanguage = CurrentCulture;
-		NewCulture = TargetCulture;
-		UE_LOG(LogTemp, Log, TEXT("Switch from %s to target %s (saved previous)"), *CurrentCulture, *NewCulture);
+		// 既不是 A 也不是 B -> 切换到 A
+		NewCulture = LanguageACode;
+		UE_LOG(LogTemp, Log, TEXT("Current (%s) matches neither A nor B. Switching to Language A (%s)"), *CurrentCulture, *NewCulture);
 	}
 
 	// 切换语言
@@ -518,8 +505,7 @@ void FLanguageOneModule::SwitchLanguage()
 		FSlateApplication::Get().InvalidateAllWidgets(true);
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("Language switched to: %s (Previous: %s, Target: %s)"), 
-		*NewCulture, *Settings->PreviousLanguage, *TargetCulture);
+	UE_LOG(LogTemp, Log, TEXT("Language switched to: %s"), *NewCulture);
 }
 
 void FLanguageOneModule::TranslateComment()

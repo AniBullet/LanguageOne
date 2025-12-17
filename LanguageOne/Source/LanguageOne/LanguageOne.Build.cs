@@ -8,27 +8,12 @@ public class LanguageOne : ModuleRules
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
-		// 版本兼容性处理 (UE 4.26 - 5.7+)
-		if (Target.Version.MajorVersion >= 5)
-		{
-			// UE 5.x 根据版本设置 include order
-			// 避免使用已过时的 Unreal5_5
-			if (Target.Version.MajorVersion == 5 && Target.Version.MinorVersion >= 6)
-			{
-				// UE 5.6+ 使用 Latest
-				IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
-			}
-			else if (Target.Version.MajorVersion == 5 && Target.Version.MinorVersion >= 4)
-			{
-				// UE 5.4-5.5 使用 Unreal5_4（避免过时的 Unreal5_5）
-				IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_4;
-			}
-			else
-			{
-				// UE 5.0-5.3 使用 Latest
-				IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
-			}
-		}
+		// 版本兼容性处理 (UE 4.26 - 5.7)
+		// 使用预处理指令确保代码在 UE 4.26/4.27 下能通过编译（这些版本没有 IncludeOrderVersion 属性）
+#if UE_5_0_OR_LATER
+		// UE 5.0+ 使用 Latest 以获得最佳编译速度和未来版本兼容性 (包括 5.6, 5.7)
+		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+#endif
 
 		PublicDependencyModuleNames.AddRange(
 			new string[]
@@ -66,12 +51,10 @@ public class LanguageOne : ModuleRules
 			}
 		);
 		
-		// EditorFramework only exists in UE5+
+		// UE 5.0+ 需要显式添加 EditorFramework
 		if (Target.Version.MajorVersion >= 5)
 		{
 			PrivateDependencyModuleNames.Add("EditorFramework");
 		}
 	}
 }
-
-

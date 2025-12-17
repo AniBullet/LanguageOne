@@ -61,26 +61,24 @@ The tool window displays:
 
 | Button | Function | Use Case |
 |--------|----------|----------|
-| **🌐 Translate/Toggle** | Smart button that auto-selects operation based on asset state | Main action button |
+| **🌐 Translate** | Smart batch translation, auto-completes untranslated parts | Main action button |
 | **🔄 Restore** | Remove translation, restore to original | When restoration needed |
 | **🗑️ Clear Original** | Permanently delete original text, keep only translation (dangerous) | After confirming translation quality |
 | **Close** | Manually close tool window | After completing operations |
 
-**Smart Behavior of Translate/Toggle Button:**
+**Smart Behavior of Translate Button:**
 - ✅ **All Untranslated** → Start translating all assets
-- ✅ **All Have Translation** → Toggle display mode (swap original/translation position)
-- ✅ **Mixed State** → Smart handling: translate untranslated, toggle translated
+- ✅ **Mixed State** → Smart handling: translates only untranslated text, skips or fixes format for translated text
+- ✅ **Translated State** → Checks and fixes format
 
 **Progress Display:**
 The tool window bottom shows real-time progress:
 - ✓ **Success**: Successfully processed assets
-- 🔄 **Has Translation**: Assets with display mode toggled
 - ✗ **Failed**: Failed asset count
 - ⚠ **Unsupported**: Unsupported asset count (fixed value)
 
 After completion, shows summary like:
 - "✓ Completed! 5 assets processed successfully"
-- "✓ Toggled display mode for 3 assets"
 
 **Technical Details:**
 - **Bilingual Format**: Uses `Translation\n---\nOriginal` format, original marked with zero-width characters (`ZWSP+ZWNJ...ZWSP+ZWJ`)
@@ -305,12 +303,6 @@ When selecting both translated and untranslated assets, clicking "Translate/Togg
 - Can toggle display anytime with "Translate/Toggle" button
 - To completely remove original, use "Clear Original" function
 
-**Q: What does "Has Translation" mean in tool window?**
-- Indicates asset contains translation markers (both original and translation)
-- Different from "Success" (successfully processed in this operation)
-- "Has Translation" shows count for display mode toggle operations
-- Clearly distinguishes translation vs toggle operation results
-
 **Q: How are unsupported assets handled?**
 - Tool automatically filters out unsupported assets
 - Unsupported asset count displayed fixed in progress bar
@@ -331,6 +323,7 @@ When selecting both translated and untranslated assets, clicking "Translate/Togg
 - 🔧 Optimized mixed state handling (process translated and untranslated assets together)
 - 📝 Use zero-width characters to mark original text, more standardized format
 - 📝 Enhanced documentation with new usage tips
+- ⚠️ **Dropped support for UE 4.x (4.26/4.27)** due to maintenance complexity. Please use older versions if needed. Only UE 5.0+ is supported.
 
 ### v1.3
 - 🔧 Fixed API issues

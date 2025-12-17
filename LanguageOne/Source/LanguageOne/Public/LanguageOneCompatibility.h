@@ -3,7 +3,7 @@
  * @Author: Bullet.S
  * @Date: 2025-12-12 20:45:47
  * @LastEditors: Bullet.S
- * @LastEditTime: 2025-12-15 23:01:11
+ * @LastEditTime: 2025-12-17 11:33:11
  * @Email: animator.bullet@foxmail.com
  */
 // Copyright Epic Games, Inc. All Rights Reserved.
@@ -11,39 +11,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 /**
  * 版本兼容性处理 - Version Compatibility Layer
  * 
- * 本文件统一处理不同 UE 版本的 API 差异，确保插件在 UE 4.26 ~ 5.7+ 上通用。
- * This file handles API differences across UE versions, ensuring the plugin works on UE 4.26 ~ 5.7+.
- * 
- * 使用方法 - Usage:
- * 1. 在需要的 .cpp 文件中包含此头文件
- * 2. 使用 LANGUAGEONE_XXX 宏代替版本特定的 API
- * 
- * 一个包通用所有版本 - One package for all versions
+ * 仅支持 UE 5.0 及以上版本。
+ * Only supports UE 5.0 and later versions.
  */
 
 // ========== 版本检测宏 ==========
+// 仅保留运行时检测，不再需要编译时兼容性宏
 #ifndef ENGINE_PATCH_VERSION
 	#define ENGINE_PATCH_VERSION 0
 #endif
-
-// 两参数版本（只比较 Major.Minor）
-#define UE_VERSION_OLDER_THAN(Major, Minor, ...) UE_VERSION_OLDER_THAN_IMPL(Major, Minor, ##__VA_ARGS__, 0)
-#define UE_VERSION_NEWER_THAN(Major, Minor, ...) UE_VERSION_NEWER_THAN_IMPL(Major, Minor, ##__VA_ARGS__, 0)
-
-// 内部实现（支持 Major.Minor.Patch）
-#define UE_VERSION_OLDER_THAN_IMPL(Major, Minor, Patch, ...) \
-	(ENGINE_MAJOR_VERSION < Major || \
-	(ENGINE_MAJOR_VERSION == Major && ENGINE_MINOR_VERSION < Minor) || \
-	(ENGINE_MAJOR_VERSION == Major && ENGINE_MINOR_VERSION == Minor && ENGINE_PATCH_VERSION < Patch))
-
-#define UE_VERSION_NEWER_THAN_IMPL(Major, Minor, Patch, ...) \
-	(ENGINE_MAJOR_VERSION > Major || \
-	(ENGINE_MAJOR_VERSION == Major && ENGINE_MINOR_VERSION > Minor) || \
-	(ENGINE_MAJOR_VERSION == Major && ENGINE_MINOR_VERSION == Minor && ENGINE_PATCH_VERSION >= Patch))
 
 // ========== URL 编码兼容 ==========
 // 所有版本统一使用 FGenericPlatformHttp::UrlEncode
@@ -51,18 +32,12 @@
 #define LANGUAGEONE_URL_ENCODE(Text) FGenericPlatformHttp::UrlEncode(Text)
 
 // ========== Slate 样式兼容 ==========
-// UE5.1+ 使用 FAppStyle
-// UE5.0 及以下使用 FEditorStyle
-#if UE_VERSION_NEWER_THAN(5, 1)
-	#include "Styling/AppStyle.h"
-	#define LANGUAGEONE_EDITOR_STYLE FAppStyle
-#else
-	#include "EditorStyle.h"
-	#define LANGUAGEONE_EDITOR_STYLE FEditorStyle
-#endif
+// UE5+ 统一使用 FAppStyle
+#include "Styling/AppStyle.h"
+// 保留别名以防万一，但建议直接使用 FAppStyle
+#define LANGUAGEONE_EDITOR_STYLE FAppStyle
 
 // ========== StringTable API 兼容 ==========
-// UE 不同版本的 StringTable API 可能有差异
 #include "Internationalization/StringTable.h"
 #include "Internationalization/StringTableCore.h"
 #include "Internationalization/Text.h"
@@ -70,7 +45,7 @@
 // 前向声明
 class ULanguageOneSettings;
 
-// StringTable 辅助函数 - 跨版本兼容
+// StringTable 辅助函数
 namespace LanguageOneStringTableHelper
 {
 	// 枚举 StringTable 的所有键
@@ -78,8 +53,12 @@ namespace LanguageOneStringTableHelper
 	{
 		StringTableData->EnumerateKeysAndSourceStrings([&OutKeys](const FTextKey& InKey, const FString& InSourceString) -> bool
 		{
-			// FTextKey 兼容性处理: 使用 ToString()
+			// UE 5.0+ 支持 FTextKey
+#if (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 7)
 			OutKeys.Add(InKey.ToString());
+#else
+			OutKeys.Add(FString(InKey.GetChars()));
+#endif
 			return true; // 继续枚举
 		});
 	}
@@ -87,21 +66,12 @@ namespace LanguageOneStringTableHelper
 	// 查找 StringTable 条目
 	inline FString FindStringTableEntry(const FStringTableConstRef& StringTableData, const FString& Key)
 	{
-#if UE_VERSION_NEWER_THAN(5, 0)
 		// UE 5.0+ 返回 FStringTableEntryConstPtr (TSharedPtr<const FStringTableEntry>)
 		auto Entry = StringTableData->FindEntry(FTextKey(Key));
 		if (Entry.IsValid())
 		{
 			return Entry->GetSourceString();
 		}
-#else
-		// UE 4.x 返回 FTextDisplayStringPtr (TSharedPtr<FString>)
-		FTextDisplayStringPtr SourceText = StringTableData->FindEntry(FTextKey(Key));
-		if (SourceText.IsValid())
-		{
-			return *SourceText;
-		}
-#endif
 		return FString();
 	}
 	
@@ -142,11 +112,28 @@ namespace LanguageOneStringTableHelper
 
 namespace LanguageOneBlueprintHelper
 {
+	// 查找变量元数据
+	inline FString GetVariableMetaData(const FBPVariableDescription& Variable, const FName& Key)
+	{
+		if (Variable.HasMetaData(Key))
+		{
+			return Variable.GetMetaData(Key);
+		}
+		return FString();
+	}
+
+	// 设置变量元数据
+	inline void SetVariableMetaData(FBPVariableDescription& Variable, const FName& Key, const FString& Value)
+	{
+		// const_cast 是为了适配 SetMetaData 非 const 签名 (虽然传入引用应该没问题，但为了保险)
+		FBPVariableDescription& MutableVariable = const_cast<FBPVariableDescription&>(Variable);
+		MutableVariable.SetMetaData(Key, Value);
+	}
+
 	// 获取变量 Tooltip（安全版本，避免崩溃）
 	inline FString GetVariableTooltip(const FBPVariableDescription& Variable)
 	{
-		// 安全检查：某些蓝图类型（如 ControlRig）可能有特殊的变量结构
-		// 使用 try-catch 或检查 MetaData 是否有效
+		// 安全检查
 		try
 		{
 			if (Variable.VarName.IsNone())
@@ -154,11 +141,7 @@ namespace LanguageOneBlueprintHelper
 				return FString();
 			}
 			
-			// 检查 MetaData 是否有效
-			if (Variable.HasMetaData(FBlueprintMetadata::MD_Tooltip))
-			{
-				return Variable.GetMetaData(FBlueprintMetadata::MD_Tooltip);
-			}
+			return GetVariableMetaData(Variable, FBlueprintMetadata::MD_Tooltip);
 		}
 		catch (...)
 		{
@@ -166,7 +149,6 @@ namespace LanguageOneBlueprintHelper
 			UE_LOG(LogTemp, Warning, TEXT("Failed to get variable tooltip for: %s"), *Variable.VarName.ToString());
 			return FString();
 		}
-		return FString();
 	}
 	
 	// 设置变量 Tooltip（安全版本）
@@ -176,7 +158,7 @@ namespace LanguageOneBlueprintHelper
 		{
 			if (!Variable.VarName.IsNone())
 			{
-				Variable.SetMetaData(FBlueprintMetadata::MD_Tooltip, Tooltip);
+				SetVariableMetaData(Variable, FBlueprintMetadata::MD_Tooltip, Tooltip);
 			}
 		}
 		catch (...)
@@ -188,15 +170,20 @@ namespace LanguageOneBlueprintHelper
 
 // ========== AssetData 兼容 ==========
 #include "AssetRegistry/AssetData.h"
+#include "AssetRegistry/IAssetRegistry.h"
+// Include Version.h to ensure version macros are defined
+#include "Runtime/Launch/Resources/Version.h"
 
 namespace LanguageOneAssetDataHelper
 {
 	// 获取资产类名
 	inline FString GetAssetClassName(const FAssetData& AssetData)
 	{
-#if UE_VERSION_NEWER_THAN(5, 1)
+		// UE 5.1+ 使用 AssetClassPath
+#if (ENGINE_MAJOR_VERSION > 5 || (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1))
 		return AssetData.AssetClassPath.ToString();
 #else
+		// UE 5.0 使用 AssetClass
 		return AssetData.AssetClass.ToString();
 #endif
 	}
@@ -206,8 +193,46 @@ namespace LanguageOneAssetDataHelper
     {
         return GetAssetClassName(AssetData).Contains(Pattern);
     }
+
+	// 根据 ObjectPath 获取 AssetData
+	inline FAssetData GetAssetByObjectPath(IAssetRegistry& AssetRegistry, const FSoftObjectPath& ObjectPath)
+	{
+#if (ENGINE_MAJOR_VERSION > 5 || (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1))
+		return AssetRegistry.GetAssetByObjectPath(ObjectPath);
+#else
+		// UE 5.0 使用 FName
+		return AssetRegistry.GetAssetByObjectPath(FName(*ObjectPath.ToString()));
+#endif
+	}
 }
 
-// ========== 其他可能的兼容性问题预留 ==========
-// 后续遇到版本差异可以在这里添加
+// ========== UMG 兼容 ==========
+#include "Components/EditableText.h"
+#include "Components/EditableTextBox.h"
 
+namespace LanguageOneUMGHelper
+{
+	inline FText GetEditableTextHintText(UEditableText* EditableText)
+	{
+		return EditableText->GetHintText();
+	}
+
+	inline FText GetEditableTextBoxHintText(UEditableTextBox* EditableTextBox)
+	{
+		return EditableTextBox->GetHintText();
+	}
+}
+
+// ========== Blueprint Function Metadata 兼容 ==========
+namespace LanguageOneBlueprintMetadataHelper
+{
+	inline bool HasMetaData(const FKismetUserDeclaredFunctionMetadata& Metadata, const FName& Key)
+	{
+		return Metadata.HasMetaData(Key);
+	}
+
+	inline void SetMetaData(FKismetUserDeclaredFunctionMetadata& Metadata, const FName& Key, const FString& Value)
+	{
+		Metadata.SetMetaData(Key, Value);
+	}
+}

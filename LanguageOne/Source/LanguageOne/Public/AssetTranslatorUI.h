@@ -35,11 +35,11 @@ public:
 	/** 增加失败计数 */
 	void IncrementFailed();
 	
-	/** 增加已翻译计数 */
-	void IncrementTranslated();
-	
 	/** 设置不支持的资产数量 */
 	void SetUnsupportedCount(int32 Count);
+
+	/** 设置当前操作名称（如：翻译、还原、清除原文） */
+	void SetOperationName(const FString& Name);
 
 private:
 	/** 获取进度百分比 */
@@ -65,9 +65,6 @@ private:
 	
 	/** 获取不支持数量文本 */
 	FText GetUnsupportedCountText() const;
-	
-	/** 获取已翻译（切换显示）数量文本 */
-	FText GetTranslatedCountText() const;
 
 private:
 	int32 TotalItems;
@@ -75,8 +72,8 @@ private:
 	int32 SuccessItems;
 	int32 FailedItems;
 	int32 UnsupportedItems;
-	int32 TranslatedItems;  // 已翻译的资产（切换显示）
 	FString CurrentItemName;
+	FString OperationName;
 	bool bIsComplete;
 	bool bIsFailed;
 	FString ErrorMessage;
