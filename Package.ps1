@@ -58,12 +58,21 @@ if (!(Test-Path $OutputDir)) {
 $ExcludeDirs = @("Binaries", "Intermediate", ".vs", "Saved", "DerivedDataCache")
 $ExcludeFiles = @("*.pdb", "*.exp", "*.lib", "*.obj")
 
-foreach ($EngineVer in $EngineVersions) {
+$TotalVersions = $EngineVersions.Count
+
+for ($i = 0; $i -lt $TotalVersions; $i++) {
+    $EngineVer = $EngineVersions[$i]
     $Version = $EngineVer.Version
     $VersionString = $EngineVer.VersionString
     
+    # Calculate sort index (Newest version gets smallest number to appear first)
+    # UE 5.7 is last in array (index 7), we want it to be 01
+    # UE 5.0 is first in array (index 0), we want it to be 08
+    $SortIndex = $TotalVersions - $i
+    $SortPrefix = "{0:D2}" -f $SortIndex
+    
     Write-Host "================================================" -ForegroundColor Yellow
-    Write-Host " Packaging for UE $Version" -ForegroundColor Yellow
+    Write-Host " Packaging for UE $Version (Sort Index: $SortPrefix)" -ForegroundColor Yellow
     Write-Host "================================================" -ForegroundColor Yellow
     
     # Create temp directory
@@ -101,7 +110,8 @@ foreach ($EngineVer in $EngineVersions) {
     [System.IO.File]::WriteAllText($UpluginFilePath, $jsonContent, $utf8NoBom)
     
     # Create ZIP package
-    $ZipName = "${PluginName}_UE${Version}_v$($OriginalUplugin.VersionName).zip"
+    # Naming format: 01_LanguageOne_UE5.7_v1.2.zip
+    $ZipName = "${SortPrefix}_${PluginName}_UE${Version}_v$($OriginalUplugin.VersionName).zip"
     $ZipPath = "$OutputDir\$ZipName"
     
     Write-Host "  Creating ZIP: $ZipName" -ForegroundColor Green
