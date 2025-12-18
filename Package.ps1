@@ -10,7 +10,6 @@ $PluginSourceDir = "LanguageOne"
 
 # Supported engine versions
 $EngineVersions = @(
-    @{ Version = "5.0"; VersionString = "5.0.0" },
     @{ Version = "5.1"; VersionString = "5.1.0" },
     @{ Version = "5.2"; VersionString = "5.2.0" },
     @{ Version = "5.3"; VersionString = "5.3.0" },
@@ -66,8 +65,8 @@ for ($i = 0; $i -lt $TotalVersions; $i++) {
     $VersionString = $EngineVer.VersionString
     
     # Calculate sort index (Newest version gets smallest number to appear first)
-    # UE 5.7 is last in array (index 7), we want it to be 01
-    # UE 5.0 is first in array (index 0), we want it to be 08
+    # UE 5.7 is last in array, we want it to be 01
+    # UE 5.1 is first in array, we want it to be 07
     $SortIndex = $TotalVersions - $i
     $SortPrefix = "{0:D2}" -f $SortIndex
     

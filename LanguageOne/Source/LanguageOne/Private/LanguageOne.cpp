@@ -225,9 +225,8 @@ void FLanguageOneModule::RegisterMenus()
 		}
 	}
 
-	// 资源编辑器工具栏 - 版本兼容
+	// 资源编辑器工具栏
 	{
-#if ENGINE_MAJOR_VERSION >= 5 && ENGINE_MINOR_VERSION >= 1
 		// UE 5.1+ 显式指定图标
 		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("AssetEditorToolbar.CommonActions");
 		{
@@ -241,7 +240,7 @@ void FLanguageOneModule::RegisterMenus()
 				);
 				LanguageEntry.SetCommandList(PluginCommands);
 				Section.AddEntry(LanguageEntry);
-				UE_LOG(LogTemp, Log, TEXT("Added PluginAction button to AssetEditor toolbar (UE 5.1+)"));
+				UE_LOG(LogTemp, Log, TEXT("Added PluginAction button to AssetEditor toolbar"));
 			}
 			{
 				FToolMenuEntry TranslateEntry = FToolMenuEntry::InitToolBarButton(
@@ -252,44 +251,9 @@ void FLanguageOneModule::RegisterMenus()
 				);
 				TranslateEntry.SetCommandList(PluginCommands);
 				Section.AddEntry(TranslateEntry);
-				UE_LOG(LogTemp, Log, TEXT("Added TranslateCommentAction button to AssetEditor toolbar (UE 5.1+)"));
+				UE_LOG(LogTemp, Log, TEXT("Added TranslateCommentAction button to AssetEditor toolbar"));
 			}
 		}
-#elif ENGINE_MAJOR_VERSION >= 5
-		// UE 5.0 使用和 4.x 相同的简单方式，但只显示图标
-		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("AssetEditor.DefaultToolBar");
-		{
-			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("LanguageOneTools");
-			{
-				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FLanguageOneCommands::Get().PluginAction));
-				Entry.SetCommandList(PluginCommands);
-				Entry.Icon = FSlateIcon(FLanguageOneStyle::GetStyleSetName(), "LanguageOne.PluginAction");
-				Entry.Label = FText::GetEmpty(); // 不显示文字
-			}
-			{
-				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FLanguageOneCommands::Get().TranslateCommentAction));
-				Entry.SetCommandList(PluginCommands);
-				Entry.Icon = FSlateIcon(FLanguageOneStyle::GetStyleSetName(), "LanguageOne.TranslateCommentAction");
-				Entry.Label = FText::GetEmpty(); // 不显示文字
-			}
-		}
-#else
-		// UE 4.26-4.27 使用旧路径
-		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("AssetEditor.DefaultToolBar");
-		{
-			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("LanguageOneTools");
-			{
-				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FLanguageOneCommands::Get().PluginAction));
-				Entry.SetCommandList(PluginCommands);
-				UE_LOG(LogTemp, Log, TEXT("Added PluginAction button to AssetEditor toolbar (UE 4.x)"));
-			}
-			{
-				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FLanguageOneCommands::Get().TranslateCommentAction));
-				Entry.SetCommandList(PluginCommands);
-				UE_LOG(LogTemp, Log, TEXT("Added TranslateCommentAction button to AssetEditor toolbar (UE 4.x)"));
-			}
-		}
-#endif
 	}
 	
 	UE_LOG(LogTemp, Log, TEXT("LanguageOne menus registered successfully"));
@@ -344,10 +308,10 @@ void FLanguageOneModule::OnExtendContentBrowserAssetSelectionMenu(FMenuBuilder& 
 {
 	MenuBuilder.BeginSection("LanguageOneAssetActions", FText::FromString(TEXT("LanguageOne 翻译 | Translation")));
 	{
-		// 添加资产翻译工具菜单项
+		// 添加资产翻译菜单项
 		MenuBuilder.AddMenuEntry(
-			FText::FromString(TEXT("资产翻译工具 | Asset Translation Tool")),
-			FText::FromString(TEXT("打开资产翻译工具，可选择翻译或还原\nOpen asset translation tool, choose to translate or restore\n\n支持/Supported:\nString Table, Data Table, Widget Blueprint, Blueprint, Material, Texture")),
+			FText::FromString(TEXT("资产翻译 | Asset Translation")),
+			FText::FromString(TEXT("打开资产翻译窗口，可选择翻译或还原\nOpen asset translation window, choose to translate or restore\n\n支持/Supported:\nString Table, Data Table, Widget Blueprint, Blueprint, Material, Texture")),
 			FSlateIcon(FLanguageOneStyle::GetStyleSetName(), "LanguageOne.TranslateCommentAction"),
 			FUIAction(
 				FExecuteAction::CreateLambda([SelectedAssets]()
@@ -404,7 +368,7 @@ void FLanguageOneModule::TranslateCurrentAsset()
 	{
 		if (Asset)
 		{
-			FAssetData AssetData = AssetRegistry.GetAssetByObjectPath(FSoftObjectPath(Asset));
+			FAssetData AssetData = LanguageOneAssetDataHelper::GetAssetByObjectPath(AssetRegistry, FSoftObjectPath(Asset));
 			if (AssetData.IsValid())
 			{
 				AssetsToTranslate.Add(AssetData);
@@ -600,7 +564,7 @@ bool FLanguageOneModule::TranslateActiveAssetEditor()
 				{
 					if (AssetEditorSubsystem->FindEditorForAsset(EditedAsset, false) == EditorInstance)
 					{
-						FAssetData AssetData = AssetRegistry.GetAssetByObjectPath(FSoftObjectPath(EditedAsset));
+						FAssetData AssetData = LanguageOneAssetDataHelper::GetAssetByObjectPath(AssetRegistry, FSoftObjectPath(EditedAsset));
 						if (AssetData.IsValid())
 						{
 							AssetsToTranslate.Add(AssetData);

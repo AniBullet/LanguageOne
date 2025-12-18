@@ -16,26 +16,17 @@
 /**
  * 版本兼容性处理 - Version Compatibility Layer
  * 
- * 仅支持 UE 5.0 及以上版本。
- * Only supports UE 5.0 and later versions.
+ * 最低支持 UE 5.1 及以上版本。
+ * Minimum requirement: UE 5.1 or later.
  */
 
-// ========== 版本检测宏 ==========
-// 仅保留运行时检测，不再需要编译时兼容性宏
-#ifndef ENGINE_PATCH_VERSION
-	#define ENGINE_PATCH_VERSION 0
-#endif
-
 // ========== URL 编码兼容 ==========
-// 所有版本统一使用 FGenericPlatformHttp::UrlEncode
 #include "GenericPlatform/GenericPlatformHttp.h"
 #define LANGUAGEONE_URL_ENCODE(Text) FGenericPlatformHttp::UrlEncode(Text)
 
 // ========== Slate 样式兼容 ==========
-// UE5+ 统一使用 FAppStyle
+// UE 5.1+ 统一使用 FAppStyle
 #include "Styling/AppStyle.h"
-// 保留别名以防万一，但建议直接使用 FAppStyle
-#define LANGUAGEONE_EDITOR_STYLE FAppStyle
 
 // ========== StringTable API 兼容 ==========
 #include "Internationalization/StringTable.h"
@@ -53,7 +44,7 @@ namespace LanguageOneStringTableHelper
 	{
 		StringTableData->EnumerateKeysAndSourceStrings([&OutKeys](const FTextKey& InKey, const FString& InSourceString) -> bool
 		{
-			// UE 5.0+ 支持 FTextKey
+			// UE 5.7+ 使用 ToString(), 旧版本使用 GetChars()
 #if (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 7)
 			OutKeys.Add(InKey.ToString());
 #else
@@ -125,7 +116,7 @@ namespace LanguageOneBlueprintHelper
 	// 设置变量元数据
 	inline void SetVariableMetaData(FBPVariableDescription& Variable, const FName& Key, const FString& Value)
 	{
-		// const_cast 是为了适配 SetMetaData 非 const 签名 (虽然传入引用应该没问题，但为了保险)
+		// const_cast 是为了适配 SetMetaData 非 const 签名
 		FBPVariableDescription& MutableVariable = const_cast<FBPVariableDescription&>(Variable);
 		MutableVariable.SetMetaData(Key, Value);
 	}
@@ -133,20 +124,16 @@ namespace LanguageOneBlueprintHelper
 	// 获取变量 Tooltip（安全版本，避免崩溃）
 	inline FString GetVariableTooltip(const FBPVariableDescription& Variable)
 	{
-		// 安全检查
 		try
 		{
 			if (Variable.VarName.IsNone())
 			{
 				return FString();
 			}
-			
 			return GetVariableMetaData(Variable, FBlueprintMetadata::MD_Tooltip);
 		}
 		catch (...)
 		{
-			// 如果访问失败，返回空字符串
-			UE_LOG(LogTemp, Warning, TEXT("Failed to get variable tooltip for: %s"), *Variable.VarName.ToString());
 			return FString();
 		}
 	}
@@ -163,7 +150,6 @@ namespace LanguageOneBlueprintHelper
 		}
 		catch (...)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to set variable tooltip for: %s"), *Variable.VarName.ToString());
 		}
 	}
 }
@@ -171,21 +157,14 @@ namespace LanguageOneBlueprintHelper
 // ========== AssetData 兼容 ==========
 #include "AssetRegistry/AssetData.h"
 #include "AssetRegistry/IAssetRegistry.h"
-// Include Version.h to ensure version macros are defined
-#include "Runtime/Launch/Resources/Version.h"
 
 namespace LanguageOneAssetDataHelper
 {
 	// 获取资产类名
 	inline FString GetAssetClassName(const FAssetData& AssetData)
 	{
-		// UE 5.1+ 使用 AssetClassPath
-#if (ENGINE_MAJOR_VERSION > 5 || (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1))
+		// UE 5.1+ 统一使用 AssetClassPath
 		return AssetData.AssetClassPath.ToString();
-#else
-		// UE 5.0 使用 AssetClass
-		return AssetData.AssetClass.ToString();
-#endif
 	}
 
     // 检查类名是否包含特定字符串
@@ -197,12 +176,8 @@ namespace LanguageOneAssetDataHelper
 	// 根据 ObjectPath 获取 AssetData
 	inline FAssetData GetAssetByObjectPath(IAssetRegistry& AssetRegistry, const FSoftObjectPath& ObjectPath)
 	{
-#if (ENGINE_MAJOR_VERSION > 5 || (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1))
+		// UE 5.1+ 直接支持 FSoftObjectPath
 		return AssetRegistry.GetAssetByObjectPath(ObjectPath);
-#else
-		// UE 5.0 使用 FName
-		return AssetRegistry.GetAssetByObjectPath(FName(*ObjectPath.ToString()));
-#endif
 	}
 }
 

@@ -47,7 +47,7 @@ Translate text content in various UE assets.
 **How to Use:**
 1. Select assets in Content Browser (multi-select supported)
 2. Right-click on assets
-3. Choose "Translate Asset | 翻译资产"
+3. Choose "Asset Translation | 资产翻译"
 4. **Asset Translation Tool Window** opens
 
 **Asset Translation Tool Window Features:**
@@ -227,10 +227,10 @@ Check "Keep Original" in settings → View side by side
 Select translated nodes → `Ctrl + T` → Restore
 
 ### 5. Translate String Table
-Select String Table in Content Browser → Right-click → "Translate Asset"
+Select String Table in Content Browser → Right-click → "Asset Translation"
 
 ### 6. Batch Translate Multiple Assets
-Ctrl + Click to select multiple assets in Content Browser → Right-click → "Translate Asset"
+Ctrl + Click to select multiple assets in Content Browser → Right-click → "Asset Translation"
 
 ### 7. Translate Sample Projects
 Can translate UE official sample assets to help understand examples
@@ -323,7 +323,7 @@ When selecting both translated and untranslated assets, clicking "Translate/Togg
 - 🔧 Optimized mixed state handling (process translated and untranslated assets together)
 - 📝 Use zero-width characters to mark original text, more standardized format
 - 📝 Enhanced documentation with new usage tips
-- ⚠️ **Dropped support for UE 4.x (4.26/4.27)** due to maintenance complexity. Please use older versions if needed. Only UE 5.0+ is supported.
+- ⚠️ **Dropped support for UE 4.x (4.26/4.27) and UE 5.0** due to maintenance complexity. Please use older versions if needed. Only UE 5.1+ is supported.
 
 ### v1.3
 - 🔧 Fixed API issues

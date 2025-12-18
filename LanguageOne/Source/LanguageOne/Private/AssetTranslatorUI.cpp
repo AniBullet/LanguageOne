@@ -808,13 +808,13 @@ void FAssetTranslatorUI::ShowAssetTranslationTool(const TArray<FAssetData>& Sele
 	if (UnsupportedAssets.Num() > 0)
 	{
 		DialogTitle = FText::FromString(FString::Printf(
-			TEXT("资产翻译工具 | Asset Translation Tool (支持 %d / 总共 %d | %d / %d total)"), 
+			TEXT("资产翻译 | Asset Translation (支持 %d / 总共 %d | %d / %d total)"), 
 			SupportedAssets.Num(), SelectedAssets.Num(), SupportedAssets.Num(), SelectedAssets.Num()));
 	}
 	else
 	{
 		DialogTitle = FText::FromString(FString::Printf(
-			TEXT("资产翻译工具 | Asset Translation Tool (%d 个资产 | %d assets)"), 
+			TEXT("资产翻译 | Asset Translation (%d 个资产 | %d assets)"), 
 			SupportedAssets.Num(), SupportedAssets.Num()));
 	}
 	
@@ -840,7 +840,7 @@ void FAssetTranslatorUI::ShowAssetTranslationTool(const TArray<FAssetData>& Sele
 			.Padding(0, 0, 12, 0)
 			[
 				SNew(SImage)
-				.Image(LANGUAGEONE_EDITOR_STYLE::GetBrush("Icons.Transform"))
+				.Image(FAppStyle::GetBrush("Icons.Transform"))
 				.DesiredSizeOverride(FVector2D(32, 32))
 			]
 			+ SHorizontalBox::Slot()
@@ -848,7 +848,7 @@ void FAssetTranslatorUI::ShowAssetTranslationTool(const TArray<FAssetData>& Sele
 			.VAlign(VAlign_Center)
 			[
 				SNew(STextBlock)
-				.Text(FText::FromString(TEXT("🌐 资产翻译工具 | Asset Translation Tool")))
+				.Text(FText::FromString(TEXT("🌐 资产翻译 | Asset Translation")))
 							.Font(FAppStyle::GetFontStyle("HeadingLarge"))
 				.Justification(ETextJustify::Left)
 			]
@@ -911,7 +911,7 @@ void FAssetTranslatorUI::ShowAssetTranslationTool(const TArray<FAssetData>& Sele
 				[
 					SNew(STextBlock)
 					.Text(FText::FromString(TEXT("💡 提示：点击按钮执行操作，进度条将显示处理结果")))
-					.Font(LANGUAGEONE_EDITOR_STYLE::GetFontStyle("SmallText"))
+					.Font(FAppStyle::GetFontStyle("SmallText"))
 					.ColorAndOpacity(FLinearColor(0.7f, 0.7f, 0.7f, 1.0f))
 					.Justification(ETextJustify::Center)
 					.AutoWrapText(true)

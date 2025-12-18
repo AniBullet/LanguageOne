@@ -7,7 +7,7 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 
 [![Version](https://img.shields.io/github/v/release/AniBullet/LanguageOne?style=flat-square&color=brightgreen)](https://github.com/AniBullet/LanguageOne/releases)
 [![Fab](https://img.shields.io/badge/Fab-下载-blue?style=flat-square)](https://fab.com/s/dc840febb323)
-[![UE](https://img.shields.io/badge/UE-5.0+-orange?style=flat-square)](https://www.unrealengine.com/)
+[![UE](https://img.shields.io/badge/UE-5.1+-orange?style=flat-square)](https://www.unrealengine.com/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 
 **[中文](#-中文说明) · [English](#-english)**
@@ -75,7 +75,7 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 **最新版本 v1.4:**
 - ✨ **智能资产翻译**：右键工具窗口简化为“翻译”（批量/补全）和“还原”，逻辑更清晰。
 - 🔄 **明确的双语切换**：设置改为“语言A”和“语言B”，Alt+Q 切换逻辑更直观。
-- 🛠️ **全版本支持**：完善对 UE 5.0 - 5.7+ 的兼容性支持（因维护困难，v1.4 起不再支持 4.x，请使用旧版本）。
+- 🛠️ **全版本支持**：完善对 UE 5.1 - 5.7+ 的兼容性支持（因维护困难，v1.4 起不再支持 4.x 和 5.0，请使用旧版本）。
 - ⚡ **性能优化**：智能检测已翻译内容，避免重复调用翻译 API，大幅提升补全速度。
 - 🎨 **界面优化**：简化工具窗口布局，移除冗余的状态显示。
 
@@ -123,7 +123,7 @@ Unreal Engine Editor Language & Blueprint Comment Translation Tool
 **Latest v1.4:**
 - ✨ **Smart Asset Translation**: Context menu tool now focuses on "Translate" (Batch/Complete) and "Restore".
 - 🔄 **Explicit Language Toggle**: Settings now use "Language A" and "Language B" for clearer toggling (Alt+Q).
-- 🛠️ **Full UE Support**: Improved compatibility for UE 5.0 - 5.7+ (Dropped 4.x support in v1.4 due to maintenance costs).
+- 🛠️ **Full UE Support**: Improved compatibility for UE 5.1 - 5.7+ (Dropped 4.x/5.0 support in v1.4 due to maintenance costs).
 - ⚡ **Optimized Performance**: Smarter translation logic avoids re-translating existing content.
 - 🎨 **UI Improvements**: Simplified tool window and cleaner progress display.
 
