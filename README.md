@@ -2,8 +2,8 @@
 
 # LanguageOne
 
-**虚幻引擎编辑器语言切换 & 蓝图注释翻译工具**  
-Unreal Engine Editor Language & Blueprint Comment Translation Tool
+**虚幻引擎编辑器语言切换 & 资产翻译工具**  
+Unreal Engine Editor Language & Asset Translation Tool
 
 [![Version](https://img.shields.io/github/v/release/AniBullet/LanguageOne?style=flat-square&color=brightgreen)](https://github.com/AniBullet/LanguageOne/releases)
 [![Fab](https://img.shields.io/badge/Fab-下载-blue?style=flat-square)](https://fab.com/s/dc840febb323)
