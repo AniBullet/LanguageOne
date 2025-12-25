@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
-	"Version": 2,
-	"VersionName": "1.4",
+	"Version": 3,
+	"VersionName": "1.5",
 	"FriendlyName": "LanguageOne",
 	"Description": "双语互切，注释翻译，资产翻译 (Language Switcher & Blueprint Comment Translator, Asset Translator.)",
 	"Category": "Editor",

@@ -66,8 +66,8 @@ public:
 			return true;
 		}
 
-		// Ctrl + T - 翻译蓝图节点注释
-		if (InKeyEvent.GetKey() == EKeys::T && InKeyEvent.IsControlDown() && !InKeyEvent.IsAltDown() && !InKeyEvent.IsShiftDown())
+		// Alt + E - 翻译蓝图节点注释
+		if (InKeyEvent.GetKey() == EKeys::E && InKeyEvent.IsAltDown() && !InKeyEvent.IsControlDown() && !InKeyEvent.IsShiftDown())
 		{
 			if (Module)
 			{
@@ -109,7 +109,7 @@ void FLanguageOneModule::StartupModule()
 		FLanguageOneCommands::Get().TranslateCommentAction,
 		FExecuteAction::CreateRaw(this, &FLanguageOneModule::TranslateComment),
 		FCanExecuteAction());
-	UE_LOG(LogTemp, Log, TEXT("Mapped TranslateCommentAction (Translate Comment): Ctrl+T"));
+	UE_LOG(LogTemp, Log, TEXT("Mapped TranslateCommentAction (Translate Comment): Alt+E"));
 
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FLanguageOneModule::RegisterMenus));
 	
@@ -128,7 +128,7 @@ void FLanguageOneModule::StartupModule()
 	{
 		InputProcessor = MakeShareable(new FLanguageOneInputProcessor(this));
 		FSlateApplication::Get().RegisterInputPreProcessor(InputProcessor, 0);
-		UE_LOG(LogTemp, Log, TEXT("LanguageOne global input processor registered (Alt+Q, Ctrl+T)"));
+		UE_LOG(LogTemp, Log, TEXT("LanguageOne global input processor registered (Alt+Q, Alt+E)"));
 	}
 
 	// 同时也注册到 LevelEditor 的命令列表（用于菜单）
@@ -246,7 +246,7 @@ void FLanguageOneModule::RegisterMenus()
 				FToolMenuEntry TranslateEntry = FToolMenuEntry::InitToolBarButton(
 					FLanguageOneCommands::Get().TranslateCommentAction,
 					LOCTEXT("TranslateComment", "Translate Comment"),
-					LOCTEXT("TranslateCommentTooltip", "Translate blueprint node comments (Ctrl+T)"),
+					LOCTEXT("TranslateCommentTooltip", "Translate blueprint node comments (Alt+E)"),
 					FSlateIcon(FLanguageOneStyle::GetStyleSetName(), "LanguageOne.TranslateCommentAction")
 				);
 				TranslateEntry.SetCommandList(PluginCommands);

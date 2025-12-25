@@ -28,7 +28,7 @@ Unreal Engine Editor Language & Asset Translation Tool
 | 功能 | 说明 | 快捷键 |
 |:---:|:---|:---:|
 | 🌐 语言切换 | 11 种语言双向切换 | `Alt + Q` |
-| 🔄 注释翻译 | 免费翻译蓝图注释 | `Ctrl + T` |
+| 🔄 注释翻译 | 免费翻译蓝图注释 | `Alt + E` |
 | 📦 资产翻译 | 翻译资产中的文本内容 | 右键菜单 |
 
 **支持语言：** 中文(简/繁)、英语、日语、韩语、德语、法语、西班牙语、俄语、葡萄牙语、意大利语
@@ -41,7 +41,7 @@ Unreal Engine Editor Language & Asset Translation Tool
 
 **使用：**
 - `Alt + Q` - 在 **语言A** 和 **语言B** 之间来回切换（在设置中配置）
-- `Ctrl + T` - 翻译/还原蓝图节点注释（选中=部分，未选=全图）
+- `Alt + E` - 翻译/还原蓝图节点注释（选中=部分，未选=全图）
 - 右键资产 - 批量翻译资产（String Table、Data Table、Widget、Blueprint 等）
   - **翻译**：智能批量翻译，自动补全未翻译部分，跳过已翻译部分
   - **还原**：清除翻译内容，恢复到原文状态
@@ -72,9 +72,12 @@ Unreal Engine Editor Language & Asset Translation Tool
 
 ### 📝 更新日志
 
-**最新版本 v1.4:**
-- ✨ **智能资产翻译**：右键工具窗口简化为“翻译”（批量/补全）和“还原”，逻辑更清晰。
-- 🔄 **明确的双语切换**：设置改为“语言A”和“语言B”，Alt+Q 切换逻辑更直观。
+**最新版本 v1.5:**
+- ⌨️ **快捷键优化**：注释翻译快捷键从 `Ctrl+T` 改为 `Alt+E`，避免冲突。
+
+**v1.4:**
+- ✨ **智能资产翻译**：右键工具窗口简化为"翻译"（批量/补全）和"还原"，逻辑更清晰。
+- 🔄 **明确的双语切换**：设置改为"语言A"和"语言B"，Alt+Q 切换逻辑更直观。
 - 🛠️ **全版本支持**：完善对 UE 5.1 - 5.7+ 的兼容性支持（因维护困难，v1.4 起不再支持 4.x 和 5.0，请使用旧版本）。
 - ⚡ **性能优化**：智能检测已翻译内容，避免重复调用翻译 API，大幅提升补全速度。
 - 🎨 **界面优化**：简化工具窗口布局，移除冗余的状态显示。
@@ -90,7 +93,7 @@ Unreal Engine Editor Language & Asset Translation Tool
 | Feature | Description | Shortcut |
 |:---:|:---|:---:|
 | 🌐 Language Switch | Toggle between 11 languages | `Alt + Q` |
-| 🔄 Comment Translation | Free blueprint comment translation | `Ctrl + T` |
+| 🔄 Comment Translation | Free blueprint comment translation | `Alt + E` |
 | 📦 Asset Translation | Translate text content in assets | Context Menu |
 
 **Languages:** Chinese (Simplified/Traditional), English, Japanese, Korean, German, French, Spanish, Russian, Portuguese, Italian
@@ -103,7 +106,7 @@ Unreal Engine Editor Language & Asset Translation Tool
 
 **Usage:**
 - `Alt + Q` - Toggle between **Language A** and **Language B** (Configured in settings)
-- `Ctrl + T` - Translate/Restore blueprint node comments (selected=partial, none=all)
+- `Alt + E` - Translate/Restore blueprint node comments (selected=partial, none=all)
 - Right-click assets - Batch translate assets (String Table, Data Table, Widget, Blueprint, etc.)
   - **Translate**: Smart batch translation, auto-completes untranslated parts
   - **Restore**: Removes translations, restores original text
@@ -120,7 +123,10 @@ Unreal Engine Editor Language & Asset Translation Tool
 
 ### 📝 Changelog
 
-**Latest v1.4:**
+**Latest v1.5:**
+- ⌨️ **Shortcut Update**: Comment translation shortcut changed from `Ctrl+T` to `Alt+E` to avoid conflicts.
+
+**v1.4:**
 - ✨ **Smart Asset Translation**: Context menu tool now focuses on "Translate" (Batch/Complete) and "Restore".
 - 🔄 **Explicit Language Toggle**: Settings now use "Language A" and "Language B" for clearer toggling (Alt+Q).
 - 🛠️ **Full UE Support**: Improved compatibility for UE 5.1 - 5.7+ (Dropped 4.x/5.0 support in v1.4 due to maintenance costs).

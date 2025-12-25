@@ -91,22 +91,22 @@ After completion, shows summary like:
 
 ### Translate Blueprint Comments
 
-**Shortcut:** `Ctrl + T`
+**Shortcut:** `Alt + E`
 
 #### Method 1: Translate Selected Nodes
 1. Select nodes in blueprint editor
-2. Press `Ctrl + T`
+2. Press `Alt + E`
 3. Selected nodes' comments are translated
-4. Press `Ctrl + T` again to restore
+4. Press `Alt + E` again to restore
 
 #### Method 2: Translate Entire Graph
 1. Open blueprint editor
 2. **Don't select any nodes**
-3. Press `Ctrl + T`
+3. Press `Alt + E`
 4. All nodes with comments are translated
 
 #### Restore Function
-- Press `Ctrl + T` again to restore original
+- Press `Alt + E` again to restore original
 - Toggle between translation/original repeatedly
 
 ---
@@ -215,16 +215,16 @@ Original English comment
 ## 💡 Tips & Tricks
 
 ### 1. Quick Translate Entire Blueprint
-Open blueprint → Press `Ctrl + T` directly → Done
+Open blueprint → Press `Alt + E` directly → Done
 
 ### 2. Translate Specific Nodes
-Ctrl + Click to select nodes → `Ctrl + T`
+Ctrl + Click to select nodes → `Alt + E`
 
 ### 3. Compare with Original
-Check "Keep Original" in settings → View side by side
+Translation automatically preserves original → View side by side
 
 ### 4. Batch Restore Comments
-Select translated nodes → `Ctrl + T` → Restore
+Select translated nodes → `Alt + E` → Restore
 
 ### 5. Translate String Table
 Select String Table in Content Browser → Right-click → "Asset Translation"
@@ -313,7 +313,10 @@ When selecting both translated and untranslated assets, clicking "Translate/Togg
 
 ## 📝 Version History
 
-### v1.4 (Current)
+### v1.5 (Current)
+- ⌨️ Comment translation shortcut changed from `Ctrl+T` to `Alt+E` to avoid conflicts
+
+### v1.4
 - ✨ Brand new Asset Translation Tool window with batch processing
 - ✨ Smart "Translate/Toggle" button auto-selects operation based on asset state
 - ✨ New "Restore" and "Clear Original" functions for flexible translation management

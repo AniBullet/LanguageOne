@@ -9,7 +9,7 @@
 void FLanguageOneCommands::RegisterCommands()
 {
 	UI_COMMAND(PluginAction, "Switch Language", "Switch between editor languages (Alt+Q)", EUserInterfaceActionType::Button, FInputChord(EModifierKey::Alt, EKeys::Q));
-	UI_COMMAND(TranslateCommentAction, "Translate Comment", "Translate blueprint node comments (Ctrl+T)", EUserInterfaceActionType::Button, FInputChord(EModifierKey::Control, EKeys::T));
+	UI_COMMAND(TranslateCommentAction, "Translate Comment", "Translate blueprint node comments (Alt+E)", EUserInterfaceActionType::Button, FInputChord(EModifierKey::Alt, EKeys::E));
 }
 
 #undef LOCTEXT_NAMESPACE
