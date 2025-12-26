@@ -315,6 +315,7 @@ When selecting both translated and untranslated assets, clicking "Translate/Togg
 
 ### v1.5 (Current)
 - ⌨️ Comment translation shortcut changed from `Ctrl+T` to `Alt+E` to avoid conflicts
+- 🐛 Fixed the issue that the blueprint selected node translation will translate the entire graph
 
 ### v1.4
 - ✨ Brand new Asset Translation Tool window with batch processing

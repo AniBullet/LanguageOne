@@ -74,13 +74,8 @@ Unreal Engine Editor Language & Asset Translation Tool
 
 **最新版本 v1.5:**
 - ⌨️ **快捷键优化**：注释翻译快捷键从 `Ctrl+T` 改为 `Alt+E`，避免冲突。
+- 🐛 **Bug Fix**: 修复蓝图选中节点翻译会翻译整个图表的问题
 
-**v1.4:**
-- ✨ **智能资产翻译**：右键工具窗口简化为"翻译"（批量/补全）和"还原"，逻辑更清晰。
-- 🔄 **明确的双语切换**：设置改为"语言A"和"语言B"，Alt+Q 切换逻辑更直观。
-- 🛠️ **全版本支持**：完善对 UE 5.1 - 5.7+ 的兼容性支持（因维护困难，v1.4 起不再支持 4.x 和 5.0，请使用旧版本）。
-- ⚡ **性能优化**：智能检测已翻译内容，避免重复调用翻译 API，大幅提升补全速度。
-- 🎨 **界面优化**：简化工具窗口布局，移除冗余的状态显示。
 
 查看完整更新记录：[GitHub Releases](https://github.com/AniBullet/LanguageOne/releases)
 
@@ -125,13 +120,7 @@ Unreal Engine Editor Language & Asset Translation Tool
 
 **Latest v1.5:**
 - ⌨️ **Shortcut Update**: Comment translation shortcut changed from `Ctrl+T` to `Alt+E` to avoid conflicts.
-
-**v1.4:**
-- ✨ **Smart Asset Translation**: Context menu tool now focuses on "Translate" (Batch/Complete) and "Restore".
-- 🔄 **Explicit Language Toggle**: Settings now use "Language A" and "Language B" for clearer toggling (Alt+Q).
-- 🛠️ **Full UE Support**: Improved compatibility for UE 5.1 - 5.7+ (Dropped 4.x/5.0 support in v1.4 due to maintenance costs).
-- ⚡ **Optimized Performance**: Smarter translation logic avoids re-translating existing content.
-- 🎨 **UI Improvements**: Simplified tool window and cleaner progress display.
+- 🐛 **Bug Fix**: Fixed the issue that the blueprint selected node translation will translate the entire graph
 
 See full history: [GitHub Releases](https://github.com/AniBullet/LanguageOne/releases)
 

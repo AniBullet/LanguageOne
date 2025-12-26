@@ -22,6 +22,7 @@
 #include "ISettingsModule.h"
 #include "ISettingsSection.h"
 #include "Kismet2/BlueprintEditorUtils.h"
+#include "Engine/Blueprint.h"
 #include "EdGraphNode_Comment.h"
 #include "SGraphPanel.h"
 #include "GraphEditor.h"
@@ -517,6 +518,14 @@ bool FLanguageOneModule::TranslateActiveAssetEditor()
 			continue;
 		}
 
+		// 排除蓝图类型资产 - 蓝图应该走 TranslateSelectedNodes 流程以支持选中节点翻译
+		// Blueprint 包括普通蓝图、Widget 蓝图、动画蓝图等
+		if (Cast<UBlueprint>(Asset))
+		{
+			UE_LOG(LogTemp, Log, TEXT("Skipping Blueprint asset for TranslateActiveAssetEditor: %s (use TranslateSelectedNodes instead)"), *Asset->GetName());
+			continue;
+		}
+
 		// Check if this editor owns the focused widget
 		// Most editors inherit from FAssetEditorToolkit
 		FAssetEditorToolkit* Toolkit = static_cast<FAssetEditorToolkit*>(EditorInstance);
@@ -562,6 +571,12 @@ bool FLanguageOneModule::TranslateActiveAssetEditor()
 				// This avoids using GetEditingObjects() which might be protected or unavailable in IAssetEditorInstance
 				for (UObject* EditedAsset : EditedAssets)
 				{
+					// 再次检查：排除蓝图类型
+					if (Cast<UBlueprint>(EditedAsset))
+					{
+						continue;
+					}
+					
 					if (AssetEditorSubsystem->FindEditorForAsset(EditedAsset, false) == EditorInstance)
 					{
 						FAssetData AssetData = LanguageOneAssetDataHelper::GetAssetByObjectPath(AssetRegistry, FSoftObjectPath(EditedAsset));
