@@ -118,9 +118,10 @@ After completion, shows summary like:
 ### Translation Service
 
 **Free Services (Recommended, No Setup):**
-- **Microsoft Edge Translator** - Recommended by default, high quality, fast, works in China
+- **Microsoft Bing Translator** - Recommended by default, high quality, fast, works in and outside China
+- **Tencent TranSmart** - No key, fast in China
 - **Google Translate** - Classic service, stable quality (may be limited in China)
-- **MyMemory Translator** - Backup option, no API key required
+- **MyMemory Translator** - Backup option, no API key required. Free services fall back in this order, and the setting can be turned off.
 
 **API Services (Setup Required):**
 - **Baidu Translation** - Free 2M chars/month
@@ -132,7 +133,7 @@ After completion, shows summary like:
 **Comment Translation:**
 | Option | Description | Recommended |
 |--------|-------------|:-----------:|
-| Translation Service | Choose translation service | Microsoft Edge |
+| Translation Service | Choose translation service | Microsoft Bing |
 | Translate To | Target language | As needed |
 | Translation Above | Translation position (original always preserved) | Personal preference |
 

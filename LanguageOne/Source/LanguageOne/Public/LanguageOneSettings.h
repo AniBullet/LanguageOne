@@ -23,11 +23,12 @@ UENUM(BlueprintType)
 enum class ETranslateProvider : uint8
 {
 	GoogleFree UMETA(DisplayName = "谷歌翻译(Web版) | Google Translate (Web)"),
-	MicrosoftFree UMETA(DisplayName = "微软Edge翻译(推荐) | Microsoft Edge (Recommended)"),
+	MicrosoftFree UMETA(DisplayName = "微软Bing翻译(推荐) | Microsoft Bing (Recommended)"),
 	YoudaoFree UMETA(DisplayName = "MyMemory翻译(备用) | MyMemory (Backup)"),
 	Baidu UMETA(DisplayName = "百度翻译(需API) | Baidu (API Required)"),
 	Google UMETA(DisplayName = "Google翻译(需API) | Google (API Required)"),
-	Custom UMETA(DisplayName = "自定义API | Custom API")
+	Custom UMETA(DisplayName = "自定义API | Custom API"),
+	TencentFree UMETA(DisplayName = "腾讯交互翻译 | Tencent TranSmart")
 };
 
 UENUM(BlueprintType)
@@ -74,6 +75,10 @@ public:
 	/** 翻译服务 */
 	UPROPERTY(Config, EditAnywhere, Category = "翻译设置 | Translation Settings", meta = (DisplayName = "翻译服务 | Translation Service", Tooltip = "免费服务开箱即用 | Free services work out of the box"))
 	ETranslateProvider TranslateProvider;
+
+	/** 免费服务失败时按 Bing、腾讯交互翻译、Google 网页、MyMemory 继续尝试 */
+	UPROPERTY(Config, EditAnywhere, Category = "翻译设置 | Translation Settings", meta = (DisplayName = "失败时自动切换 | Auto Fallback", Tooltip = "只对免费服务生效。付费服务失败时只报错 | Free services only. Paid services report an error instead of falling back"))
+	bool bEnableAutoFallback;
 
 	/** 百度 APP ID */
 	UPROPERTY(Config, EditAnywhere, Category = "翻译设置 | Translation Settings", meta = (DisplayName = "百度 APP ID", EditCondition = "TranslateProvider == ETranslateProvider::Baidu"))

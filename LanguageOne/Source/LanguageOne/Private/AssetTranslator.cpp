@@ -36,7 +36,7 @@
 // 1. 新格式（译文在下，默认）: "标记开始原文标记结束\n---\n译文"
 // 2. 新格式（译文在上）: "译文\n---\n标记开始原文标记结束"
 // 3. 旧格式: "Translated\n---\nOriginal"（兼容）
-static FString StripExistingTranslation(const FString& Text)
+static FString StripExistingTranslation(const FString& Text, const FString& ReferenceOriginal = FString())
 {
 	if (Text.IsEmpty())
 	{
@@ -116,7 +116,20 @@ static FString StripExistingTranslation(const FString& Text)
 			}
 			else
 			{
-				// 没有标记，根据设置判断
+				const FString TrimmedReference = ReferenceOriginal.TrimStartAndEnd();
+				if (!TrimmedReference.IsEmpty())
+				{
+					if (Left.TrimStartAndEnd().Equals(TrimmedReference))
+					{
+						return TrimmedReference;
+					}
+					if (Right.TrimStartAndEnd().Equals(TrimmedReference))
+					{
+						return TrimmedReference;
+					}
+				}
+
+				// 没有标记，也没有对得上的参考原文，根据设置判断
 				const ULanguageOneSettings* Settings = GetDefault<ULanguageOneSettings>();
 				if (Settings->bTranslationAboveOriginal)
 				{
@@ -628,7 +641,9 @@ void FAssetTranslator::TranslateStringTableEntries(UObject* Asset, const TArray<
 
 		// 关键：提取纯原文（避免重复翻译造成内容叠加）
 		// 无论当前文本是否已包含译文，都提取纯原文
-		FString CleanSourceText = StripExistingTranslation(SourceText);
+		static const FName OriginalTextMetaDataId = TEXT("LanguageOne_OriginalText");
+		const FString MetaOriginalText = LanguageOneStringTableHelper::GetStringTableEntryMetaData(StringTableData, Key, OriginalTextMetaDataId);
+		FString CleanSourceText = StripExistingTranslation(SourceText, MetaOriginalText);
 		
 		// 保存纯原文，用于后续的元数据存储
 		State->OriginalTexts.Add(Key, CleanSourceText);
@@ -638,14 +653,13 @@ void FAssetTranslator::TranslateStringTableEntries(UObject* Asset, const TArray<
 		if (State->bSilent && HasTranslation(SourceText))
 		{
 			// 重新提取原文（确保正确处理隐藏标记）
-			FString RestoredText = StripExistingTranslation(SourceText);
+			FString RestoredText = StripExistingTranslation(SourceText, MetaOriginalText);
 			
 			// 修改 String Table（使用兼容性辅助函数）
 			State->StringTable->Modify();
 			LanguageOneStringTableHelper::SetStringTableEntry(State->StringTable, Key, RestoredText);
 			
 			// 清除元数据中的原文（重要！确保还原后 HasAssetTranslation 返回 false）
-			static const FName OriginalTextMetaDataId = TEXT("LanguageOne_OriginalText");
 			LanguageOneStringTableHelper::SetStringTableEntryMetaData(State->StringTable, Key, OriginalTextMetaDataId, FString());
 			
 			// 刷新 StringTable - 保持实时刷新功能不变！
@@ -670,33 +684,7 @@ void FAssetTranslator::TranslateStringTableEntries(UObject* Asset, const TArray<
 				}
 				
 				FString OriginalText = State->OriginalTexts.FindRef(Key);
-				FString NewText;
-				static const FName OriginalTextMetaDataId = TEXT("LanguageOne_OriginalText");
-				
-				const ULanguageOneSettings* Settings = GetDefault<ULanguageOneSettings>();
-				
-				// 使用双语格式：根据设置决定译文和原文的位置
-				// 格式：译文\n[原文]隐藏标记原文隐藏标记 或 原文\n[译文]隐藏标记原文隐藏标记
-				// U+200B = Zero Width Space (ZWSP)
-				// U+200C = Zero Width Non-Joiner (ZWNJ) - 开始标记
-				// U+200D = Zero Width Joiner (ZWJ) - 结束标记
-				const TCHAR HiddenStartMarker[] = { 0x200B, 0x200C, 0 }; // ZWSP + ZWNJ
-				const TCHAR HiddenEndMarker[] = { 0x200B, 0x200D, 0 };   // ZWSP + ZWJ
-				const FString HiddenStart(HiddenStartMarker);
-				const FString HiddenEnd(HiddenEndMarker);
-				
-				if (Settings->bTranslationAboveOriginal)
-				{
-					// 译文在上方：译文\n---\n标记开始原文标记结束
-					// 显示为：译文\n---\n原文（标记不可见，---作为明显分隔）
-					NewText = FString::Printf(TEXT("%s\n---\n%s%s%s"), *TranslatedText, *HiddenStart, *OriginalText, *HiddenEnd);
-				}
-				else
-				{
-					// 译文在下方（默认）：标记开始原文标记结束\n---\n译文
-					// 显示为：原文\n---\n译文（标记不可见，---作为明显分隔）
-					NewText = FString::Printf(TEXT("%s%s%s\n---\n%s"), *HiddenStart, *OriginalText, *HiddenEnd, *TranslatedText);
-				}
+				const FString NewText = LanguageOneFormatBilingual(OriginalText, TranslatedText);
 				
 				// 同时将原文保存到元数据中（用于还原和清除操作）
 				LanguageOneStringTableHelper::SetStringTableEntryMetaData(State->StringTable, Key, OriginalTextMetaDataId, OriginalText);
@@ -803,23 +791,7 @@ void FAssetTranslator::TranslateDataTable(UObject* Asset, bool bSilent)
 						CleanSourceText,
 						FOnTranslationComplete::CreateLambda([DataTable, RowName, TextProperty, RowData, CleanSourceText, &TranslatedFieldCount](const FString& TranslatedText)
 						{
-							const ULanguageOneSettings* Settings = GetDefault<ULanguageOneSettings>();
-							const TCHAR HiddenStartMarker[] = { 0x200B, 0x200C, 0 }; // ZWSP + ZWNJ
-							const TCHAR HiddenEndMarker[] = { 0x200B, 0x200D, 0 };   // ZWSP + ZWJ
-							const FString HiddenStart(HiddenStartMarker);
-							const FString HiddenEnd(HiddenEndMarker);
-							
-							FString NewText;
-							if (Settings->bTranslationAboveOriginal)
-							{
-								// 译文在上方：译文\n---\n标记开始原文标记结束
-								NewText = FString::Printf(TEXT("%s\n---\n%s%s%s"), *TranslatedText, *HiddenStart, *CleanSourceText, *HiddenEnd);
-							}
-							else
-							{
-								// 译文在下方（默认）：标记开始原文标记结束\n---\n译文
-								NewText = FString::Printf(TEXT("%s%s%s\n---\n%s"), *HiddenStart, *CleanSourceText, *HiddenEnd, *TranslatedText);
-							}
+							const FString NewText = LanguageOneFormatBilingual(CleanSourceText, TranslatedText);
 
 							// 修改 DataTable
 							DataTable->Modify();
@@ -870,23 +842,7 @@ void FAssetTranslator::TranslateDataTable(UObject* Asset, bool bSilent)
 								CleanSourceText,
 								FOnTranslationComplete::CreateLambda([DataTable, RowName, StrProperty, RowData, CleanSourceText, &TranslatedFieldCount](const FString& TranslatedText)
 								{
-									const ULanguageOneSettings* Settings = GetDefault<ULanguageOneSettings>();
-									const TCHAR HiddenStartMarker[] = { 0x200B, 0x200C, 0 }; // ZWSP + ZWNJ
-									const TCHAR HiddenEndMarker[] = { 0x200B, 0x200D, 0 };   // ZWSP + ZWJ
-									const FString HiddenStart(HiddenStartMarker);
-									const FString HiddenEnd(HiddenEndMarker);
-									
-									FString NewText;
-									if (Settings->bTranslationAboveOriginal)
-									{
-										// 译文在上方：译文\n---\n标记开始原文标记结束
-										NewText = FString::Printf(TEXT("%s\n---\n%s%s%s"), *TranslatedText, *HiddenStart, *CleanSourceText, *HiddenEnd);
-									}
-									else
-									{
-										// 译文在下方（默认）：标记开始原文标记结束\n---\n译文
-										NewText = FString::Printf(TEXT("%s%s%s\n---\n%s"), *HiddenStart, *CleanSourceText, *HiddenEnd, *TranslatedText);
-									}
+									const FString NewText = LanguageOneFormatBilingual(CleanSourceText, TranslatedText);
 
 								// 修改 DataTable
 								DataTable->Modify();
@@ -1277,25 +1233,7 @@ void FAssetTranslator::TranslateSingleText(const FString& SourceText, TFunction<
 		CleanSourceText,
 		FOnTranslationComplete::CreateLambda([CleanSourceText, OnSuccess](const FString& TranslatedText)
 		{
-			const ULanguageOneSettings* Settings = GetDefault<ULanguageOneSettings>();
-			const TCHAR HiddenStartMarker[] = { 0x200B, 0x200C, 0 }; // ZWSP + ZWNJ
-			const TCHAR HiddenEndMarker[] = { 0x200B, 0x200D, 0 };   // ZWSP + ZWJ
-			const FString HiddenStart(HiddenStartMarker);
-			const FString HiddenEnd(HiddenEndMarker);
-			
-			FString NewText;
-			if (Settings->bTranslationAboveOriginal)
-			{
-				// 译文在上方：译文\n---\n标记开始原文标记结束
-				NewText = FString::Printf(TEXT("%s\n---\n%s%s%s"), *TranslatedText, *HiddenStart, *CleanSourceText, *HiddenEnd);
-			}
-			else
-			{
-				// 译文在下方（默认）：标记开始原文标记结束\n---\n译文
-				NewText = FString::Printf(TEXT("%s%s%s\n---\n%s"), *HiddenStart, *CleanSourceText, *HiddenEnd, *TranslatedText);
-			}
-
-			OnSuccess(NewText);
+			OnSuccess(LanguageOneFormatBilingual(CleanSourceText, TranslatedText));
 		}),
 		FOnTranslationError::CreateLambda([OnError](const FString& ErrorMessage)
 		{
@@ -1974,44 +1912,27 @@ void FAssetTranslator::PerformToggleDisplayMode(const TArray<FAssetData>& Transl
 					FString CurrentText = LanguageOneStringTableHelper::FindStringTableEntry(StringTableData, Key);
 					if (HasTranslation(CurrentText))
 					{
+						static const FName OriginalTextMetaDataId = TEXT("LanguageOne_OriginalText");
+						const FString MetaOriginalText = LanguageOneStringTableHelper::GetStringTableEntryMetaData(StringTableData, Key, OriginalTextMetaDataId);
 						FString NewText;
 						if (IsBilingualMode(CurrentText))
 						{
 							// 切换到原文模式：只显示原文
-							NewText = StripExistingTranslation(CurrentText);
+							NewText = StripExistingTranslation(CurrentText, MetaOriginalText);
 						}
 						else
 						{
 							// 切换到双语模式：显示原文\n译文 或 译文\n原文
-							// 从元数据中获取原文（最可靠）
-							static const FName OriginalTextMetaDataId = TEXT("LanguageOne_OriginalText");
-							FString OriginalText = LanguageOneStringTableHelper::GetStringTableEntryMetaData(StringTableData, Key, OriginalTextMetaDataId);
+							FString OriginalText = MetaOriginalText;
 							
-							// 如果元数据中没有原文，尝试从当前文本提取
+							// 元数据中没有原文时，尝试从当前文本提取
 							if (OriginalText.IsEmpty())
 							{
 								OriginalText = StripExistingTranslation(CurrentText);
 							}
 							
 							// 当前文本就是译文（因为是从原文模式切换过来的）
-							FString TranslationText = CurrentText;
-							
-							const TCHAR HiddenStartMarker[] = { 0x200B, 0x200C, 0 };
-							const TCHAR HiddenEndMarker[] = { 0x200B, 0x200D, 0 };
-							const FString HiddenStart(HiddenStartMarker);
-							const FString HiddenEnd(HiddenEndMarker);
-							
-							const ULanguageOneSettings* Settings = GetDefault<ULanguageOneSettings>();
-							if (Settings->bTranslationAboveOriginal)
-							{
-								// 译文在上方：译文\n---\n标记开始原文标记结束
-								NewText = FString::Printf(TEXT("%s\n---\n%s%s%s"), *TranslationText, *HiddenStart, *OriginalText, *HiddenEnd);
-							}
-							else
-							{
-								// 译文在下方（默认）：标记开始原文标记结束\n---\n译文
-								NewText = FString::Printf(TEXT("%s%s%s\n---\n%s"), *HiddenStart, *OriginalText, *HiddenEnd, *TranslationText);
-							}
+							NewText = LanguageOneFormatBilingual(OriginalText, CurrentText);
 							
 							// 恢复元数据
 							LanguageOneStringTableHelper::SetStringTableEntryMetaData(StringTable, Key, OriginalTextMetaDataId, OriginalText);

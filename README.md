@@ -27,7 +27,7 @@ Unreal Engine Editor Language & Asset Translation Tool
 | 资产翻译 | 翻译资产中的文本内容 | 右键菜单 |
 
 - **支持语言**：中文（简/繁）、英语、日语、韩语、德语、法语、西班牙语、俄语、葡萄牙语、意大利语
-- **翻译服务**：微软 Edge（推荐）· 谷歌翻译 · MyMemory · 百度 API · Google API
+- **翻译服务**：微软 Bing（推荐）· 腾讯交互翻译 · 谷歌翻译 · MyMemory · 百度 API · Google API。免费服务失败时自动换线，可在设置里关闭。
 
 ## 安装
 
@@ -98,7 +98,7 @@ Switch the Unreal Editor language in one keystroke, and translate blueprint comm
 | Asset Translation | Translate text content in assets | Context menu |
 
 - **Languages**: Chinese (Simplified / Traditional), English, Japanese, Korean, German, French, Spanish, Russian, Portuguese, Italian
-- **Translation services**: Microsoft Edge (recommended) · Google Translate · MyMemory · Baidu API · Google API
+- **Translation services**: Microsoft Bing (recommended) · Tencent TranSmart · Google Translate · MyMemory · Baidu API · Google API. Free services fall back automatically; the setting can be turned off.
 
 **Install**: download from [Fab](https://fab.com/s/dc840febb323) or [GitHub Releases](https://github.com/AniBullet/LanguageOne/releases/latest), enable the plugin and restart the editor.
 

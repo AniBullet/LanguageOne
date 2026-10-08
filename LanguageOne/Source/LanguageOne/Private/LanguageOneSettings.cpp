@@ -14,7 +14,8 @@ ULanguageOneSettings::ULanguageOneSettings()
 	: SourceEditorLanguage(EEditorLanguage::English) // 默认语言A：英文
 	, TargetEditorLanguage(EEditorLanguage::ChineseSimplified) // 默认语言B：中文
 	, CurrentEditorLanguage(TEXT(""))
-	, TranslateProvider(ETranslateProvider::MicrosoftFree)  // 默认使用微软Edge翻译（免费且稳定）
+	, TranslateProvider(ETranslateProvider::MicrosoftFree)  // 默认使用微软Bing翻译（免费，国内外均可直连）
+	, bEnableAutoFallback(true)
 	, BaiduAppId(TEXT(""))
 	, BaiduSecretKey(TEXT(""))
 	, GoogleApiKey(TEXT(""))

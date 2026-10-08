@@ -841,24 +841,7 @@ void FLanguageOneModule::TranslateSelectedNodes()
 						}
 						
 					UEdGraphNode* NodeToModify = WeakNode.Get();
-					const ULanguageOneSettings* Settings = GetDefault<ULanguageOneSettings>();
-					FString NewComment;
-					
-					const TCHAR HiddenStartMarker[] = { 0x200B, 0x200C, 0 }; // ZWSP + ZWNJ
-					const TCHAR HiddenEndMarker[] = { 0x200B, 0x200D, 0 };   // ZWSP + ZWJ
-					const FString HiddenStart(HiddenStartMarker);
-					const FString HiddenEnd(HiddenEndMarker);
-					
-					if (Settings->bTranslationAboveOriginal)
-					{
-						// 译文在上方：译文\n---\n标记开始原文标记结束
-						NewComment = FString::Printf(TEXT("%s\n---\n%s%s%s"), *TranslatedText, *HiddenStart, *NodeComment, *HiddenEnd);
-					}
-					else
-					{
-						// 译文在下方（默认）：标记开始原文标记结束\n---\n译文
-						NewComment = FString::Printf(TEXT("%s%s%s\n---\n%s"), *HiddenStart, *NodeComment, *HiddenEnd, *TranslatedText);
-					}
+					const FString NewComment = LanguageOneFormatBilingual(NodeComment, TranslatedText);
 
 						NodeToModify->Modify();
 						NodeToModify->NodeComment = NewComment;

@@ -215,3 +215,15 @@ namespace LanguageOneBlueprintMetadataHelper
 		Metadata.SetMetaData(Key, Value);
 	}
 }
+
+// 双语文本只使用可见分隔符。旧数据里的零宽标记仍由读取逻辑识别。
+#include "LanguageOneSettings.h"
+inline FString LanguageOneFormatBilingual(const FString& OriginalText, const FString& TranslatedText)
+{
+	const ULanguageOneSettings* Settings = GetDefault<ULanguageOneSettings>();
+	if (Settings && Settings->bTranslationAboveOriginal)
+	{
+		return TranslatedText + TEXT("\n---\n") + OriginalText;
+	}
+	return OriginalText + TEXT("\n---\n") + TranslatedText;
+}
