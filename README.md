@@ -1,139 +1,135 @@
+<a id="readme-top"></a>
+
 <div align="center">
 
 # LanguageOne
 
-**虚幻引擎编辑器语言切换 & 资产翻译工具**  
+**虚幻引擎编辑器语言切换与资产翻译工具**<br>
 Unreal Engine Editor Language & Asset Translation Tool
 
-[![Version](https://img.shields.io/github/v/release/AniBullet/LanguageOne?style=flat-square&color=brightgreen)](https://github.com/AniBullet/LanguageOne/releases)
-[![Fab](https://img.shields.io/badge/Fab-下载-blue?style=flat-square)](https://fab.com/s/dc840febb323)
-[![UE](https://img.shields.io/badge/UE-5.1+-orange?style=flat-square)](https://www.unrealengine.com/)
-[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/AniBullet/LanguageOne?label=release&logo=github)](https://github.com/AniBullet/LanguageOne/releases/latest)
+[![Fab](https://img.shields.io/badge/Fab-download-0078F2?logo=epicgames)](https://fab.com/s/dc840febb323)
+[![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.1%2B-313131?logo=unrealengine)](https://www.unrealengine.com/)
+[![License](https://img.shields.io/github/license/AniBullet/LanguageOne)](#许可与声明)
 
-**[中文](#-中文说明) · [English](#-english)**
+[**Fab 下载**](https://fab.com/s/dc840febb323) | [**GitHub 下载**](https://github.com/AniBullet/LanguageOne/releases/latest) | [**使用指南**](docs/翻译功能使用说明.md) | [**更新日志**](https://github.com/AniBullet/LanguageOne/releases) | [English](#english)
 
 </div>
 
-> [!NOTE]
-> **📢 声明 | Disclaimer**  
-> 插件使用 AI 辅助编写，主要用于个人学习和交流。  
-> This plugin is AI-assisted and created for personal learning purposes.
+一键切换 UE 编辑器语言，免费翻译蓝图注释和资产文本。
 
----
-
-## 🇨🇳 中文说明
-
-### ✨ 功能特性
+## 功能
 
 | 功能 | 说明 | 快捷键 |
-|:---:|:---|:---:|
-| 🌐 语言切换 | 11 种语言双向切换 | `Alt + Q` |
-| 🔄 注释翻译 | 免费翻译蓝图注释 | `Alt + E` |
-| 📦 资产翻译 | 翻译资产中的文本内容 | 右键菜单 |
+|:---|:---|:---:|
+| 语言切换 | 11 种语言双向切换 | <kbd>Alt</kbd> + <kbd>Q</kbd> |
+| 注释翻译 | 免费翻译蓝图注释 | <kbd>Alt</kbd> + <kbd>E</kbd> |
+| 资产翻译 | 翻译资产中的文本内容 | 右键菜单 |
 
-**支持语言：** 中文(简/繁)、英语、日语、韩语、德语、法语、西班牙语、俄语、葡萄牙语、意大利语
+- **支持语言**：中文（简/繁）、英语、日语、韩语、德语、法语、西班牙语、俄语、葡萄牙语、意大利语
+- **翻译服务**：微软 Edge（推荐）· 谷歌翻译 · MyMemory · 百度 API · Google API
 
-**翻译服务：** 微软Edge（推荐）· 谷歌翻译 · MyMemory · 百度API · GoogleAPI
+## 安装
 
-### 🚀 快速开始
+从 [Fab](https://fab.com/s/dc840febb323) 或 [GitHub Releases](https://github.com/AniBullet/LanguageOne/releases/latest) 下载，启用插件后重启编辑器。
 
-**安装：** [Fab 下载](https://fab.com/s/dc840febb323) 或 [GitHub Releases](https://github.com/AniBullet/LanguageOne/releases)
+## 使用
 
-**使用：**
-- `Alt + Q` - 在 **语言A** 和 **语言B** 之间来回切换（在设置中配置）
-- `Alt + E` - 翻译/还原蓝图节点注释（选中=部分，未选=全图）
-- 右键资产 - 批量翻译资产（String Table、Data Table、Widget、Blueprint 等）
+- <kbd>Alt</kbd> + <kbd>Q</kbd>：在 **语言 A** 和 **语言 B** 之间来回切换（在设置中配置）
+- <kbd>Alt</kbd> + <kbd>E</kbd>：翻译 / 还原蓝图节点注释（有选中则只处理选中节点，未选中则处理整张图）
+- **右键资产**：批量翻译资产（String Table、Data Table、Widget、Blueprint 等）
   - **翻译**：智能批量翻译，自动补全未翻译部分，跳过已翻译部分
   - **还原**：清除翻译内容，恢复到原文状态
   - **清除原文**：只保留译文（慎用）
 
-**设置：** `编辑 > 编辑器偏好设置 > 插件 > LanguageOne`
-- 语言A (Source)：默认语言（如英文）
-- 语言B (Target)：目标语言（如中文）
-- 译文位置：译文在上方/下方
+**设置入口**：`编辑 > 编辑器偏好设置 > 插件 > LanguageOne`
 
-### 📸 预览
+| 选项 | 说明 |
+|:---|:---|
+| 语言 A (Source) | 默认语言，如英文 |
+| 语言 B (Target) | 目标语言，如中文 |
+| 译文位置 | 译文显示在原文上方或下方 |
 
-<div align="center">
+完整说明见 [翻译功能使用说明](docs/翻译功能使用说明.md)。
 
-| 启用插件 | 翻译按钮 |
-|:---:|:---:|
-| <img src="Preview/1启用.png" width="400"/> | <img src="Preview/2按钮.png" width="400"/> |
+## 截图
 
-| 蓝图翻译 | 批量翻译 | 设置界面 |
-|:---:|:---:|:---:|
-| <img src="Preview/3蓝图翻译.png" width="260"/> | <img src="Preview/4批量翻译.png" width="260"/> | <img src="Preview/5设置界面.png" width="260"/> |
+<table>
+<tr>
+<td align="center" width="50%"><img src="Preview/1启用.png" width="400" alt="启用插件"><br><sub>启用插件</sub></td>
+<td align="center" width="50%"><img src="Preview/2按钮.png" width="400" alt="翻译按钮"><br><sub>翻译按钮</sub></td>
+</tr>
+</table>
 
-</div>
+<details>
+<summary>更多截图</summary>
+<br>
+<table>
+<tr>
+<td align="center" width="33%"><img src="Preview/3蓝图翻译.png" width="260" alt="蓝图翻译"><br><sub>蓝图翻译</sub></td>
+<td align="center" width="33%"><img src="Preview/4批量翻译.png" width="260" alt="批量翻译"><br><sub>批量翻译</sub></td>
+<td align="center" width="33%"><img src="Preview/5设置界面.png" width="260" alt="设置界面"><br><sub>设置界面</sub></td>
+</tr>
+</table>
+</details>
 
-### 📖 详细文档
+## 更新日志
 
-[完整使用指南](docs/翻译功能使用说明.md)
+**v1.5**
 
-### 📝 更新日志
+- **快捷键调整**：注释翻译快捷键从 <kbd>Ctrl</kbd> + <kbd>T</kbd> 改为 <kbd>Alt</kbd> + <kbd>E</kbd>，避免冲突
+- **问题修复**：修复蓝图中仅选中部分节点时仍翻译整张图表的问题
 
-**最新版本 v1.5:**
-- ⌨️ **快捷键优化**：注释翻译快捷键从 `Ctrl+T` 改为 `Alt+E`，避免冲突。
-- 🐛 **Bug Fix**: 修复蓝图选中节点翻译会翻译整个图表的问题
+完整记录见 [GitHub Releases](https://github.com/AniBullet/LanguageOne/releases)。
 
+## 参与贡献
 
-查看完整更新记录：[GitHub Releases](https://github.com/AniBullet/LanguageOne/releases)
+- 问题与建议：提交 [GitHub Issues](https://github.com/AniBullet/LanguageOne/issues)
+- 欢迎 Fork 本仓库并发起 Pull Request
 
----
+## English
 
-## 🌍 English
-
-### ✨ Features
+Switch the Unreal Editor language in one keystroke, and translate blueprint comments and asset text for free.
 
 | Feature | Description | Shortcut |
-|:---:|:---|:---:|
-| 🌐 Language Switch | Toggle between 11 languages | `Alt + Q` |
-| 🔄 Comment Translation | Free blueprint comment translation | `Alt + E` |
-| 📦 Asset Translation | Translate text content in assets | Context Menu |
+|:---|:---|:---:|
+| Language Switch | Toggle between 11 languages | <kbd>Alt</kbd> + <kbd>Q</kbd> |
+| Comment Translation | Free blueprint comment translation | <kbd>Alt</kbd> + <kbd>E</kbd> |
+| Asset Translation | Translate text content in assets | Context menu |
 
-**Languages:** Chinese (Simplified/Traditional), English, Japanese, Korean, German, French, Spanish, Russian, Portuguese, Italian
+- **Languages**: Chinese (Simplified / Traditional), English, Japanese, Korean, German, French, Spanish, Russian, Portuguese, Italian
+- **Translation services**: Microsoft Edge (recommended) · Google Translate · MyMemory · Baidu API · Google API
 
-**Translation:** Microsoft Edge (Recommended) · Google Translate · MyMemory · Baidu API · Google API
+**Install**: download from [Fab](https://fab.com/s/dc840febb323) or [GitHub Releases](https://github.com/AniBullet/LanguageOne/releases/latest), enable the plugin and restart the editor.
 
-### 🚀 Quick Start
+**Usage**
 
-**Install:** [Download from Fab](https://fab.com/s/dc840febb323) or [GitHub Releases](https://github.com/AniBullet/LanguageOne/releases)
+- <kbd>Alt</kbd> + <kbd>Q</kbd>: toggle between **Language A** and **Language B** (configured in settings)
+- <kbd>Alt</kbd> + <kbd>E</kbd>: translate / restore blueprint node comments (selected nodes only, or the whole graph if nothing is selected)
+- **Right-click assets**: batch translate String Table, Data Table, Widget, Blueprint, etc.
+  - **Translate**: smart batch translation, fills in untranslated parts and skips translated ones
+  - **Restore**: removes translations and restores the original text
+  - **Clear Original**: keeps the translation only (use with caution)
 
-**Usage:**
-- `Alt + Q` - Toggle between **Language A** and **Language B** (Configured in settings)
-- `Alt + E` - Translate/Restore blueprint node comments (selected=partial, none=all)
-- Right-click assets - Batch translate assets (String Table, Data Table, Widget, Blueprint, etc.)
-  - **Translate**: Smart batch translation, auto-completes untranslated parts
-  - **Restore**: Removes translations, restores original text
-  - **Clear Original**: Keeps translation only (Use with caution)
+**Settings**: `Edit > Editor Preferences > Plugins > LanguageOne`
 
-**Settings:** `Edit > Editor Preferences > Plugins > LanguageOne`
-- Language A (Source): Default language (e.g. English)
-- Language B (Target): Target language (e.g. Chinese)
-- Position: Translation Above/Below
+- **Language A (Source)**: default language, e.g. English
+- **Language B (Target)**: target language, e.g. Chinese
+- **Position**: show the translation above or below the original
 
-### 📖 Documentation
+**Latest v1.5**
 
-[Full Guide](docs/TRANSLATION_GUIDE.md)
+- **Shortcut update**: comment translation shortcut changed from <kbd>Ctrl</kbd> + <kbd>T</kbd> to <kbd>Alt</kbd> + <kbd>E</kbd> to avoid conflicts
+- **Bug fix**: translating selected blueprint nodes no longer translates the entire graph
 
-### 📝 Changelog
+See the [Full Guide](docs/TRANSLATION_GUIDE.md) and [GitHub Releases](https://github.com/AniBullet/LanguageOne/releases) for details.
 
-**Latest v1.5:**
-- ⌨️ **Shortcut Update**: Comment translation shortcut changed from `Ctrl+T` to `Alt+E` to avoid conflicts.
-- 🐛 **Bug Fix**: Fixed the issue that the blueprint selected node translation will translate the entire graph
+## 许可与声明
 
-See full history: [GitHub Releases](https://github.com/AniBullet/LanguageOne/releases)
+- 代码以 [MIT License](LICENSE) 授权
+- 插件使用 AI 辅助编写，主要用于个人学习和交流
+- This plugin is AI-assisted and created for personal learning purposes.
 
 ---
 
-<div align="center">
-
-## 📄 License
-
-MIT License - See [LICENSE](LICENSE)
-
-**Star ⭐ · PR Welcome**
-
-Made with ❤️ by [Bullet.S](https://x.com/aniBulletCom)
-
-</div>
+<sub>© Bullet.S · [X / Twitter](https://x.com/aniBulletCom) · [回到顶部](#readme-top)</sub>
