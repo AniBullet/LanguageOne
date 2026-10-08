@@ -33,8 +33,8 @@ $PluginVersion = $OriginalUplugin.VersionName
 # Auto-update version in documentation files
 Write-Host "Updating documentation version to v$PluginVersion..." -ForegroundColor Cyan
 $DocFiles = @(
-    @{ Path = "Docs\翻译功能使用说明.md"; Pattern = "### v(\d+\.\d+) \(当前\)"; Replacement = "### v$PluginVersion (当前)" },
-    @{ Path = "Docs\TRANSLATION_GUIDE.md"; Pattern = "### v(\d+\.\d+) \(Current\)"; Replacement = "### v$PluginVersion (Current)" }
+    @{ Path = "docs\翻译功能使用说明.md"; Pattern = "### v(\d+\.\d+) \(当前\)"; Replacement = "### v$PluginVersion (当前)" },
+    @{ Path = "docs\TRANSLATION_GUIDE.md"; Pattern = "### v(\d+\.\d+) \(Current\)"; Replacement = "### v$PluginVersion (Current)" }
 )
 
 foreach ($Doc in $DocFiles) {

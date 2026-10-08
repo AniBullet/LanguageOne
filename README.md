@@ -68,7 +68,7 @@ Unreal Engine Editor Language & Asset Translation Tool
 
 ### 📖 详细文档
 
-[完整使用指南](Docs/翻译功能使用说明.md)
+[完整使用指南](docs/翻译功能使用说明.md)
 
 ### 📝 更新日志
 
@@ -114,7 +114,7 @@ Unreal Engine Editor Language & Asset Translation Tool
 
 ### 📖 Documentation
 
-[Full Guide](Docs/TRANSLATION_GUIDE.md)
+[Full Guide](docs/TRANSLATION_GUIDE.md)
 
 ### 📝 Changelog
 
