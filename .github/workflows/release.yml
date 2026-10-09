@@ -56,7 +56,8 @@ jobs:
 
       - name: Package for every engine version
         if: steps.ver.outputs.release == 'true'
-        shell: powershell
+        # pwsh 按 UTF-8 读取脚本；Windows PowerShell 5.1 会把无 BOM 的中文路径读成乱码
+        shell: pwsh
         run: .\Package.ps1
 
       - name: Create GitHub Release
