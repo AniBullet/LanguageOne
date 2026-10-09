@@ -141,3 +141,6 @@ Write-Host ""
 Write-Host "Upload each package to Fab for its corresponding engine version" -ForegroundColor Cyan
 Write-Host ""
 
+# robocopy 成功时也会留下非零的 $LASTEXITCODE，显式返回 0，避免 CI 误判失败
+exit 0
+
