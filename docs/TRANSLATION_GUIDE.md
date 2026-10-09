@@ -314,7 +314,15 @@ When selecting both translated and untranslated assets, clicking "Translate/Togg
 
 ## 📝 Version History
 
-### v1.5 (Current)
+### v1.6 (Current)
+- 🔧 Microsoft Edge free translation was shut down; switched to the Microsoft Bing web translator, which works both inside and outside mainland China
+- ✨ New free service: Tencent TranSmart
+- ✨ Free services fall back automatically on failure (Bing → Tencent → Google → MyMemory), can be turned off in settings; unreachable services are paused for 5 minutes
+- 🔧 Free service errors now include the service name and HTTP status code; paid service failures include a suggestion
+- 🐛 Bilingual text no longer contains zero-width characters, fixing boxes around the original text with some fonts (old format can still be restored)
+- 🔧 UE 5.8 support
+
+### v1.5
 - ⌨️ Comment translation shortcut changed from `Ctrl+T` to `Alt+E` to avoid conflicts
 - 🐛 Fixed the issue that the blueprint selected node translation will translate the entire graph
 

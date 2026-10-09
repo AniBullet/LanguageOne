@@ -77,7 +77,7 @@ public:
 	ETranslateProvider TranslateProvider;
 
 	/** 免费服务失败时按 Bing、腾讯交互翻译、Google 网页、MyMemory 继续尝试 */
-	UPROPERTY(Config, EditAnywhere, Category = "翻译设置 | Translation Settings", meta = (DisplayName = "失败时自动切换 | Auto Fallback", Tooltip = "只对免费服务生效。付费服务失败时只报错 | Free services only. Paid services report an error instead of falling back"))
+	UPROPERTY(Config, EditAnywhere, Category = "翻译设置 | Translation Settings", meta = (DisplayName = "失败时自动切换翻译服务 | Auto Fallback", Tooltip = "只对免费服务生效。付费服务失败时只报错 | Free services only. Paid services report an error instead of falling back"))
 	bool bEnableAutoFallback;
 
 	/** 百度 APP ID */
@@ -116,5 +116,8 @@ public:
 	/** 显示详细翻译日志 */
 	UPROPERTY(Config, EditAnywhere, Category = "翻译设置 | Translation Settings", meta = (DisplayName = "详细日志 | Verbose Logging", Tooltip = "在输出日志显示详细的翻译信息 | Show detailed translation info in output log"))
 	bool bVerboseAssetTranslationLog;
+
+	/** 按"译文在上方"设置拼出双语文本，只用可见分隔符。旧数据里的零宽标记仍由读取逻辑识别。 */
+	FString FormatBilingual(const FString& OriginalText, const FString& TranslatedText) const;
 };
 

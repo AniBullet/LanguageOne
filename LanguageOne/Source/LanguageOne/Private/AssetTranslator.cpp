@@ -31,6 +31,13 @@
 #include "Kismet2/KismetEditorUtilities.h"
 #include "FileHelpers.h" // 包含 UEditorLoadingAndSavingUtils
 
+// StringTable 条目元数据中保存纯原文的键（用于还原、清除和切换显示）
+static FName GetOriginalTextMetaDataId()
+{
+	static const FName MetaDataId(TEXT("LanguageOne_OriginalText"));
+	return MetaDataId;
+}
+
 // 辅助函数：从已翻译文本中提取原文
 // 支持多种格式：
 // 1. 新格式（译文在下，默认）: "标记开始原文标记结束\n---\n译文"
@@ -641,8 +648,7 @@ void FAssetTranslator::TranslateStringTableEntries(UObject* Asset, const TArray<
 
 		// 关键：提取纯原文（避免重复翻译造成内容叠加）
 		// 无论当前文本是否已包含译文，都提取纯原文
-		static const FName OriginalTextMetaDataId = TEXT("LanguageOne_OriginalText");
-		const FString MetaOriginalText = LanguageOneStringTableHelper::GetStringTableEntryMetaData(StringTableData, Key, OriginalTextMetaDataId);
+		const FString MetaOriginalText = LanguageOneStringTableHelper::GetStringTableEntryMetaData(StringTableData, Key, GetOriginalTextMetaDataId());
 		FString CleanSourceText = StripExistingTranslation(SourceText, MetaOriginalText);
 		
 		// 保存纯原文，用于后续的元数据存储
@@ -660,7 +666,7 @@ void FAssetTranslator::TranslateStringTableEntries(UObject* Asset, const TArray<
 			LanguageOneStringTableHelper::SetStringTableEntry(State->StringTable, Key, RestoredText);
 			
 			// 清除元数据中的原文（重要！确保还原后 HasAssetTranslation 返回 false）
-			LanguageOneStringTableHelper::SetStringTableEntryMetaData(State->StringTable, Key, OriginalTextMetaDataId, FString());
+			LanguageOneStringTableHelper::SetStringTableEntryMetaData(State->StringTable, Key, GetOriginalTextMetaDataId(), FString());
 			
 			// 刷新 StringTable - 保持实时刷新功能不变！
 			RefreshStringTableEditor(State->StringTable);
@@ -684,10 +690,10 @@ void FAssetTranslator::TranslateStringTableEntries(UObject* Asset, const TArray<
 				}
 				
 				FString OriginalText = State->OriginalTexts.FindRef(Key);
-				const FString NewText = LanguageOneFormatBilingual(OriginalText, TranslatedText);
+				const FString NewText = GetDefault<ULanguageOneSettings>()->FormatBilingual(OriginalText, TranslatedText);
 				
 				// 同时将原文保存到元数据中（用于还原和清除操作）
-				LanguageOneStringTableHelper::SetStringTableEntryMetaData(State->StringTable, Key, OriginalTextMetaDataId, OriginalText);
+				LanguageOneStringTableHelper::SetStringTableEntryMetaData(State->StringTable, Key, GetOriginalTextMetaDataId(), OriginalText);
 
 			// 修改 String Table（使用兼容性辅助函数）
 			State->StringTable->Modify();
@@ -791,7 +797,7 @@ void FAssetTranslator::TranslateDataTable(UObject* Asset, bool bSilent)
 						CleanSourceText,
 						FOnTranslationComplete::CreateLambda([DataTable, RowName, TextProperty, RowData, CleanSourceText, &TranslatedFieldCount](const FString& TranslatedText)
 						{
-							const FString NewText = LanguageOneFormatBilingual(CleanSourceText, TranslatedText);
+							const FString NewText = GetDefault<ULanguageOneSettings>()->FormatBilingual(CleanSourceText, TranslatedText);
 
 							// 修改 DataTable
 							DataTable->Modify();
@@ -842,7 +848,7 @@ void FAssetTranslator::TranslateDataTable(UObject* Asset, bool bSilent)
 								CleanSourceText,
 								FOnTranslationComplete::CreateLambda([DataTable, RowName, StrProperty, RowData, CleanSourceText, &TranslatedFieldCount](const FString& TranslatedText)
 								{
-									const FString NewText = LanguageOneFormatBilingual(CleanSourceText, TranslatedText);
+									const FString NewText = GetDefault<ULanguageOneSettings>()->FormatBilingual(CleanSourceText, TranslatedText);
 
 								// 修改 DataTable
 								DataTable->Modify();
@@ -1233,7 +1239,7 @@ void FAssetTranslator::TranslateSingleText(const FString& SourceText, TFunction<
 		CleanSourceText,
 		FOnTranslationComplete::CreateLambda([CleanSourceText, OnSuccess](const FString& TranslatedText)
 		{
-			OnSuccess(LanguageOneFormatBilingual(CleanSourceText, TranslatedText));
+			OnSuccess(GetDefault<ULanguageOneSettings>()->FormatBilingual(CleanSourceText, TranslatedText));
 		}),
 		FOnTranslationError::CreateLambda([OnError](const FString& ErrorMessage)
 		{
@@ -1756,8 +1762,7 @@ void FAssetTranslator::PerformClearOriginal(const TArray<FAssetData>& Translatab
 						FString TranslationOnly = ExtractTranslationOnly(CurrentText);
 						LanguageOneStringTableHelper::SetStringTableEntry(StringTable, Key, TranslationOnly);
 						// 清除元数据中的原文
-						static const FName OriginalTextMetaDataId = TEXT("LanguageOne_OriginalText");
-						LanguageOneStringTableHelper::SetStringTableEntryMetaData(StringTable, Key, OriginalTextMetaDataId, FString());
+						LanguageOneStringTableHelper::SetStringTableEntryMetaData(StringTable, Key, GetOriginalTextMetaDataId(), FString());
 					}
 				}
 				RefreshStringTableEditor(StringTable);
@@ -1912,8 +1917,7 @@ void FAssetTranslator::PerformToggleDisplayMode(const TArray<FAssetData>& Transl
 					FString CurrentText = LanguageOneStringTableHelper::FindStringTableEntry(StringTableData, Key);
 					if (HasTranslation(CurrentText))
 					{
-						static const FName OriginalTextMetaDataId = TEXT("LanguageOne_OriginalText");
-						const FString MetaOriginalText = LanguageOneStringTableHelper::GetStringTableEntryMetaData(StringTableData, Key, OriginalTextMetaDataId);
+						const FString MetaOriginalText = LanguageOneStringTableHelper::GetStringTableEntryMetaData(StringTableData, Key, GetOriginalTextMetaDataId());
 						FString NewText;
 						if (IsBilingualMode(CurrentText))
 						{
@@ -1932,10 +1936,10 @@ void FAssetTranslator::PerformToggleDisplayMode(const TArray<FAssetData>& Transl
 							}
 							
 							// 当前文本就是译文（因为是从原文模式切换过来的）
-							NewText = LanguageOneFormatBilingual(OriginalText, CurrentText);
+							NewText = GetDefault<ULanguageOneSettings>()->FormatBilingual(OriginalText, CurrentText);
 							
 							// 恢复元数据
-							LanguageOneStringTableHelper::SetStringTableEntryMetaData(StringTable, Key, OriginalTextMetaDataId, OriginalText);
+							LanguageOneStringTableHelper::SetStringTableEntryMetaData(StringTable, Key, GetOriginalTextMetaDataId(), OriginalText);
 						}
 						LanguageOneStringTableHelper::SetStringTableEntry(StringTable, Key, NewText);
 					}

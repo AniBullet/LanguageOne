@@ -38,6 +38,7 @@ private:
 private:
 	TSharedPtr<class FUICommandList> PluginCommands;
 	TSharedPtr<class FLanguageOneInputProcessor> InputProcessor;
+	FDelegateHandle FreeServiceSwitchedHandle;
 	
 	// 存储已翻译节点的原始注释，用于还原
 	TMap<TWeakObjectPtr<UEdGraphNode>, FString> OriginalComments;

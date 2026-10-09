@@ -21,7 +21,7 @@
 
 | 线路 | 国内直连 | 海外/代理 | 要 Key | 备注 |
 | --- | --- | --- | --- | --- |
-| Bing `cn.bing.com/ttranslatev3` | 200，译出「打开内容浏览器并保存所有资源」 | 200 | 否 | 先 GET `/translator` 取 `params_AbusePreventionHelper` 的 key/token。国内 `www.bing.com` 会 302 到 `cn.bing.com`，所以插件固定用 `cn.bing.com`。不带 Cookie 也能译。token 坏了仍是 HTTP 200，正文是 `{"statusCode":205}`。长文本会截断（约 1670 字符输入只译回约 471 字），要分段。 |
+| Bing `cn.bing.com/ttranslatev3` | 200，译出「打开内容浏览器并保存所有资源」 | 200 | 否 | 先 GET `/translator` 取 `params_AbusePreventionHelper` 的 key/token。国内 `www.bing.com` 会 302 到 `cn.bing.com`，插件先访问 `www.bing.com`，从页面的 `<link rel="canonical">` 读出实际落地域名，并带上页面返回的 Cookie；失败时换 `cn.bing.com` 重试一次。不带 Cookie 也能译。token 坏了仍是 HTTP 200，正文是 `{"statusCode":205}`。长文本会截断（约 1670 字符输入只译回约 471 字），要分段。 |
 | TranSmart `transmart.qq.com/api/imt` | 200，约 0.3 秒 | check-host 多国 200；代理 25/25 | 否 | JSON：`header.fn=auto_translation`，`source.text_list`，`target.lang`。非官方接口。 |
 | Google `translate.googleapis.com/translate_a/single?client=gtx` | 12 秒超时 | 200 | 否 | 国内不可用。 |
 | MyMemory `api.mymemory.translated.net/get` | 200 | 200 | 否 | [匿名 5000 字符/天](https://mymemory.translated.net/doc/usagelimits.php)，[单次最多 500 字节](https://mymemory.translated.net/doc/spec.php)。 |

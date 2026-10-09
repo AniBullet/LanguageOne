@@ -117,6 +117,12 @@ void FLanguageOneModule::StartupModule()
 	// 注册 Content Browser 扩展
 	RegisterContentBrowserExtensions();
 
+	// 免费翻译服务自动切换时提示用户
+	FreeServiceSwitchedHandle = FCommentTranslator::OnFreeServiceSwitched().AddLambda([](const FString& ServiceName)
+	{
+		FAssetTranslatorUI::ShowInfoNotification(FString::Printf(TEXT("已自动切换到 %s | Switched to %s"), *ServiceName, *ServiceName));
+	});
+
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
 		"LanguageOne",
 		FOnSpawnTab::CreateLambda([](const FSpawnTabArgs&) { return SNew(SDockTab); })
@@ -179,6 +185,8 @@ void FLanguageOneModule::ShutdownModule()
 	{
 		SettingsModule->UnregisterSettings("Editor", "Plugins", "LanguageOne");
 	}
+
+	FCommentTranslator::OnFreeServiceSwitched().Remove(FreeServiceSwitchedHandle);
 
 	UToolMenus::UnRegisterStartupCallback(this);
 
@@ -841,7 +849,7 @@ void FLanguageOneModule::TranslateSelectedNodes()
 						}
 						
 					UEdGraphNode* NodeToModify = WeakNode.Get();
-					const FString NewComment = LanguageOneFormatBilingual(NodeComment, TranslatedText);
+					const FString NewComment = GetDefault<ULanguageOneSettings>()->FormatBilingual(NodeComment, TranslatedText);
 
 						NodeToModify->Modify();
 						NodeToModify->NodeComment = NewComment;

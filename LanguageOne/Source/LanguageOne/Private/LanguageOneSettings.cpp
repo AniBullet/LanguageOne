@@ -28,3 +28,11 @@ ULanguageOneSettings::ULanguageOneSettings()
 {
 }
 
+FString ULanguageOneSettings::FormatBilingual(const FString& OriginalText, const FString& TranslatedText) const
+{
+	if (bTranslationAboveOriginal)
+	{
+		return TranslatedText + TEXT("\n---\n") + OriginalText;
+	}
+	return OriginalText + TEXT("\n---\n") + TranslatedText;
+}
