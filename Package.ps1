@@ -30,22 +30,12 @@ $UpluginPath = "$PluginSourceDir\$PluginName.uplugin"
 $OriginalUplugin = Get-Content $UpluginPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $PluginVersion = $OriginalUplugin.VersionName
 
-# Auto-update version in documentation files
-Write-Host "Updating documentation version to v$PluginVersion..." -ForegroundColor Cyan
-$DocFiles = @(
-    @{ Path = "docs\翻译功能使用说明.md"; Pattern = "### v(\d+\.\d+) \(当前\)"; Replacement = "### v$PluginVersion (当前)" },
-    @{ Path = "docs\TRANSLATION_GUIDE.md"; Pattern = "### v(\d+\.\d+) \(Current\)"; Replacement = "### v$PluginVersion (Current)" }
-)
-
-foreach ($Doc in $DocFiles) {
-    if (Test-Path $Doc.Path) {
-        $content = Get-Content $Doc.Path -Raw -Encoding UTF8
-        $newContent = $content -replace $Doc.Pattern, $Doc.Replacement
-        if ($content -ne $newContent) {
-            $utf8NoBom = New-Object System.Text.UTF8Encoding $false
-            [System.IO.File]::WriteAllText($Doc.Path, $newContent, $utf8NoBom)
-            Write-Host "  Updated: $($Doc.Path)" -ForegroundColor Green
-        }
+# The release notes come from the "### vX.Y" section of each usage guide (see docs/RELEASING.md).
+# Only check here; the sections are written by hand.
+Write-Host "Packaging v$PluginVersion" -ForegroundColor Cyan
+Get-ChildItem "docs" -Filter "*.md" | Where-Object { (Get-Content $_.FullName -Raw -Encoding UTF8) -match "(?m)^### v\d" } | ForEach-Object {
+    if ((Get-Content $_.FullName -Raw -Encoding UTF8) -notmatch "(?m)^### v$([regex]::Escape($PluginVersion)) ") {
+        Write-Warning "$($_.Name) has no '### v$PluginVersion' section; the release workflow will refuse to publish"
     }
 }
 Write-Host ""

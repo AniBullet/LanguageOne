@@ -1,5 +1,9 @@
 # AGENTS.md
 
+## Releasing
+
+Bumping the version, packaging for Fab, or publishing a GitHub Release: follow `docs/RELEASING.md`. Pushing to main publishes a release whenever `VersionName` in the `.uplugin` has no matching tag yet.
+
 ## Agent skills
 
 ### Issue tracker

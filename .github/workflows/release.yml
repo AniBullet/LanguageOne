@@ -40,9 +40,21 @@ jobs:
           }
           ZH=$(section "docs/翻译功能使用说明.md")
           EN=$(section "docs/TRANSLATION_GUIDE.md")
-          if [ -z "$(echo "$ZH$EN" | tr -d '[:space:]')" ]; then
-            echo "::error::使用说明里缺少 ### $TAG 的更新记录，发版前先写好"
+          if [ -z "$(echo "$ZH" | tr -d '[:space:]')" ] || [ -z "$(echo "$EN" | tr -d '[:space:]')" ]; then
+            echo "::error::两份使用说明都要写 ### $TAG 的更新记录（docs/翻译功能使用说明.md、docs/TRANSLATION_GUIDE.md）"
             exit 1
+          fi
+
+          # 整数 Version 也要比上一个版本大
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          if [ -n "$PREV_TAG" ]; then
+            read_version() { python -c "import json, sys; print(json.loads(sys.stdin.buffer.read().decode('utf-8-sig'))['Version'])"; }
+            CUR=$(read_version < LanguageOne/LanguageOne.uplugin)
+            PREV=$(git show "$PREV_TAG:LanguageOne/LanguageOne.uplugin" | read_version)
+            if [ "$CUR" -le "$PREV" ]; then
+              echo "::error::.uplugin 的 Version=$CUR 没有大于 $PREV_TAG 的 Version=$PREV"
+              exit 1
+            fi
           fi
 
           {
