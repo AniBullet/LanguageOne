@@ -1,0 +1,73 @@
+name: Release
+
+# push main 时读取 .uplugin 的 VersionName；对应 tag 还不存在就打包并发布 Release。
+# 版本号没变则跳过。更新说明取自两份使用说明里 "### vX.Y" 小节，发版提交里要先写好。
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect version and collect release notes
+        id: ver
+        shell: bash
+        run: |
+          VER=$(python -c "import json; print(json.load(open('LanguageOne/LanguageOne.uplugin', encoding='utf-8-sig'))['VersionName'])")
+          TAG="v$VER"
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists, skipping release"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # 取 "### v1.6 ..." 到下一个版本标题、二级标题或分隔线之间的内容
+          section() {
+            awk -v head="### $TAG " 'index($0, head) == 1 { found = 1; next } found && (/^### v/ || /^## / || /^---/) { exit } found' "$1" | tr -d '\r'
+          }
+          ZH=$(section "docs/翻译功能使用说明.md")
+          EN=$(section "docs/TRANSLATION_GUIDE.md")
+          if [ -z "$(echo "$ZH$EN" | tr -d '[:space:]')" ]; then
+            echo "::error::使用说明里缺少 ### $TAG 的更新记录，发版前先写好"
+            exit 1
+          fi
+
+          {
+            echo "$ZH"
+            echo
+            echo "---"
+            echo
+            echo "$EN"
+          } > release-notes.md
+          echo "release=true" >> "$GITHUB_OUTPUT"
+
+      - name: Package for every engine version
+        if: steps.ver.outputs.release == 'true'
+        shell: powershell
+        run: .\Package.ps1
+
+      - name: Create GitHub Release
+        if: steps.ver.outputs.release == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.ver.outputs.tag }}
+        run: |
+          gh release create "$TAG" \
+            --target "$GITHUB_SHA" \
+            --title "LanguageOne $TAG" \
+            --notes-file release-notes.md \
+            Packages/Release/*.zip
