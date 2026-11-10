@@ -314,7 +314,10 @@ When selecting both translated and untranslated assets, clicking "Translate/Togg
 
 ## 📝 Version History
 
-### v1.6 (Current)
+### v1.7 (Current)
+- 🔧 UE 5.9 support
+
+### v1.6
 - 🔧 Microsoft Edge free translation was shut down; switched to the Microsoft Bing web translator, which works both inside and outside mainland China
 - ✨ New free service: Tencent TranSmart
 - ✨ Free services fall back automatically on failure (Bing → Tencent → Google → MyMemory), can be turned off in settings; unreachable services are paused for 5 minutes

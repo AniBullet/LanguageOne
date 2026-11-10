@@ -1,8 +1,8 @@
-# LanguageOne: compile the plugin against every installed UE 5.1-5.8 with RunUAT BuildPlugin
+# LanguageOne: compile the plugin against every installed UE 5.1-5.9 with RunUAT BuildPlugin
 # Engine locations come from the Epic launcher registry keys. Exit code is non-zero if any build fails.
 
 param(
-    [string[]]$Versions = @("5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8")
+    [string[]]$Versions = @("5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9")
 )
 
 $Plugin = Join-Path $PSScriptRoot "LanguageOne\LanguageOne.uplugin"

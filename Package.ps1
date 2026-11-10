@@ -17,7 +17,8 @@ $EngineVersions = @(
     @{ Version = "5.5"; VersionString = "5.5.0" },
     @{ Version = "5.6"; VersionString = "5.6.0" },
     @{ Version = "5.7"; VersionString = "5.7.0" },
-    @{ Version = "5.8"; VersionString = "5.8.0" }
+    @{ Version = "5.8"; VersionString = "5.8.0" },
+    @{ Version = "5.9"; VersionString = "5.9.0" }
 )
 
 Write-Host "================================================" -ForegroundColor Cyan
@@ -56,7 +57,7 @@ for ($i = 0; $i -lt $TotalVersions; $i++) {
     $VersionString = $EngineVer.VersionString
     
     # Oldest version gets smallest number (stable: adding new versions only appends a new index)
-    # UE 5.1 is first in array -> 01, UE 5.8 -> 08, UE 5.9 (future) -> 09
+    # UE 5.1 is first in array -> 01, UE 5.8 -> 08, UE 5.9 -> 09
     $SortIndex = $i + 1
     $SortPrefix = "{0:D2}" -f $SortIndex
     
